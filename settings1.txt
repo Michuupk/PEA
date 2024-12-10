@@ -1,0 +1,8 @@
+Name of file
+NAME_OF: mp9.atsp
+
+randomTSP -> 1, NearestNeighbour -> 2, BruteForce -> 3
+SELECTION: 3
+
+Time limit in minutes
+TIME_LIMIT: 30

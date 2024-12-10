@@ -1,0 +1,16 @@
+Name of file
+NAME_OF: mp9.atsp
+
+BEST_KNOWN:
+
+SimmulatedAnnealing -> 1; 
+SELECTION: 1
+
+#SimmulatedAnnealing Settings
+INIT_TEMP: 50
+MIN_TEMP: 0
+COOLING_RATE: 0.1
+
+
+Time limit in minutes
+TIME_LIMIT: 30
