@@ -29,6 +29,9 @@ long long bestKnown = -1;
 long double inittemp = 0;
 long double endtemp = 0;
 long double cooling = 0;
+long long populationSize = 0;
+long long generations = 0;
+long long mutationRate = 0;
 string startall;
 int startNode = 0;
 bool all_flag = false;
@@ -58,24 +61,6 @@ void loadSettings()
             string label;
             iss >> label >> selection;
         }
-        if (myText.find("INIT_TEMP") != string::npos)
-        {
-            istringstream iss(myText);
-            string label;
-            iss >> label >> inittemp;
-        }
-        if (myText.find("MIN_TEMP") != string::npos)
-        {
-            istringstream iss(myText);
-            string label;
-            iss >> label >> endtemp;
-        }
-        if (myText.find("COOLING_RATE") != string::npos)
-        {
-            istringstream iss(myText);
-            string label;
-            iss >> label >> cooling;
-        }
         if (myText.find("START_NODE: ALL") != string::npos)
         {
             istringstream iss(myText);
@@ -93,6 +78,50 @@ void loadSettings()
             string label;
             iss >> label >> startNode;
             cout << "Start node: " << startNode << endl;
+        }
+        if (selection == 1) //for AS
+        {
+            if (myText.find("INIT_TEMP") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> inittemp;
+            }
+            if (myText.find("MIN_TEMP") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> endtemp;
+            }
+            if (myText.find("COOLING_RATE") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> cooling;
+            }
+        } else if (selection == 2) //for Genetic Algorithm
+        {
+            if (myText.find("POPULATION_SIZE") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> populationSize;
+                cout << "Population size: " << populationSize << endl;
+            }
+            if (myText.find("GENERATIONS") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> generations;
+                cout << "Generations: " << generations << endl;
+            }
+            if (myText.find("MUTATION_RATE") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> mutationRate;
+                cout << "Mutation rate: " << mutationRate << endl;
+            }
         }
         if (myText.find("TIME_LIMIT") != string::npos)
         {
@@ -280,6 +309,16 @@ void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, lo
     }
 }
 
+long long calculateCost(vector<long long> &path, vector<vector<long long>> &graph)
+{
+    int cost = 0;
+    for (int i = 0; i < path.size() - 1; i++)
+    {
+        cost += graph[path[i]][path[i + 1]];
+    }
+    return cost;
+}
+
 vector<long long> generateNeighbour(vector<long long> &path)
 {
     vector<long long> newPath = path;
@@ -300,11 +339,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
     while (inittemp > endtemp)
     {
         vector<long long> newpath = generateNeighbour(bestpath);
-        long long newcost = 0;
-        for (long long i = 0; i < graphSize - 1; i++)
-        {
-            newcost += graph[newpath[i]][newpath[i + 1]];
-        }
+        long long newcost = calculateCost(newpath, graph);
         int delta = newcost - cost;
         double random = ((double) rand() / (RAND_MAX));
         cout<<random<<endl;
@@ -319,9 +354,82 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
 
 }
 
+void generatePopulation(vector<vector<long long>> &population, long long populationSize, long long graphSize)
+{
+    for (long long i = 0; i < populationSize; i++)
+    {
+        vector<long long> path;
+        for (long long j = 0; j < graphSize; j++)
+        {
+            path.push_back(j);
+        }
+        random_shuffle(path.begin(), path.end());
+        population.push_back(path);
+    }
+}
+
+vector<vector<long long>> createoffspring(vector<vector<long long>> &parent1, vector<vector<long long>> &parent2)
+{
+    vector<vector<long long>> offspring;
+    int start = rand() % parent1.size();
+    int end = rand() % (start, parent1.size());
+    for(int i = 0; i < parent1.size(); i++)
+    {
+        start = rand() % parent1[i].size();
+        end = rand() % (start, parent1[i].size());
+    }
+
+    vector<long long> subpath = parent1.subpath(start, end);    
+
+    return offspring;
+}
+
 void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath)
 {
     cout << "Genetic Algorithm" << endl;
+
+    vector<vector<long long>> population;
+    vector<long long> fitness;
+    generatePopulation(population, populationSize, graphSize);
+
+    for (long long i = 0; i < generations; i++)
+    {
+        for(auto path : population){
+            long long pathCost = calculateCost(path, graph);
+            fitness.push_back(pathCost);
+        }
+        
+        vector<vector<long long>> newPopulation;        // survivors
+        int midway = population.size()/2;
+        for (long long j = 0; j < midway; j++)
+        {
+            if(fitness[j] < fitness[j+midway])
+            {
+                newPopulation.push_back(population[j]);
+            }
+            else
+            {
+                newPopulation.push_back(population[j+midway]);
+            }
+        }
+        population = newPopulation;
+        fitness.clear();
+        vector<vector<long long>> parent1;  
+        vector<vector<long long>> parent2; 
+        vector<vector<long long>> offspring;
+        midway = population.size()/2;
+        for (long long j = 0; j < midway; j++)
+        {
+            parent1.push_back(population[j]);
+            parent2.push_back(population[j + midway]);
+        }
+
+        offspring = createoffspring(parent1, parent2);
+
+
+
+    }
+
 }
 
 void validPath(vector<long long> &bestpath) // function checking if every city is visited only once

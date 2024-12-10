@@ -11,6 +11,11 @@ INIT_TEMP: 50
 MIN_TEMP: 0
 COOLING_RATE: 0.1
 
+#Genetic Algorithm Settings
+POPULATION_SIZE: 100 
+GENERATIONS: 500
+MUTATION_RATE: 
+
 
 Time limit in minutes
 TIME_LIMIT: 30
