@@ -9,6 +9,7 @@
 #include <queue>
 #include <tuple>
 #include <algorithm>
+#include <random>
 
 using namespace std;
 
@@ -363,28 +364,33 @@ void generatePopulation(vector<vector<long long>> &population, long long populat
         {
             path.push_back(j);
         }
-        random_shuffle(path.begin(), path.end());
+        random_device rd;
+        mt19937 g(rd());
+        shuffle(path.begin(), path.end(), g);
         population.push_back(path);
     }
 }
 
-vector<vector<long long>> createoffspring(vector<vector<long long>> &parent1, vector<vector<long long>> &parent2)
+vector<long long> createoffspring(vector<long long> &parent1, vector<long long> &parent2)
 {
-    vector<vector<long long>> offspring;
+    vector<long long> offspring1;
+    vector<long long> offspring2;
+
     int start = rand() % parent1.size();
     int end = rand() % (start, parent1.size());
-    for(int i = 0; i < parent1.size(); i++)
+    vector<long long> insertion;
+    for (int i = start; i <= end; i++)
     {
-        start = rand() % parent1[i].size();
-        end = rand() % (start, parent1[i].size());
+        insertion.push_back(parent1[i]);
     }
+    
 
-    vector<long long> subpath = parent1.subpath(start, end);    
 
-    return offspring;
+
+    return offspring1, offspring2;
 }
 
-void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath)
+void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long long populationSize, long long generations, long long mutationRate)
 {
     cout << "Genetic Algorithm" << endl;
 
@@ -412,19 +418,23 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
                 newPopulation.push_back(population[j+midway]);
             }
         }
-        population = newPopulation;
         fitness.clear();
-        vector<vector<long long>> parent1;  
-        vector<vector<long long>> parent2; 
+        population = newPopulation; // survivors become new population
+        vector<long long> parent1;  
+        vector<long long> parent2;
         vector<vector<long long>> offspring;
-        midway = population.size()/2;
-        for (long long j = 0; j < midway; j++)
+
+        parent1 = population[rand() % population.size()]; // random parent selection
+        parent2 = population[rand() % population.size()];
+        if (parent2 == parent1)
         {
-            parent1.push_back(population[j]);
-            parent2.push_back(population[j + midway]);
+            parent2 = population[rand() % population.size()]; // if parents are the same, select another one
         }
 
-        offspring = createoffspring(parent1, parent2);
+        offspring.push_back(createoffspring(parent1, parent2));
+
+
+
 
 
 
@@ -481,6 +491,24 @@ int main()
     {
         start_clock = chrono::high_resolution_clock::now();
         SimulatedAnnealing(graph, graphSize, cost, bestpath, inittemp, endtemp, cooling);
+        end_clock = chrono::high_resolution_clock::now();
+        chrono::duration<double> result = end_clock - start_clock;
+        cout << "Time of execution: " << result.count() << "s" << endl;
+        if (bestbestbest != numeric_limits<long long>::max())
+        {
+            cout << "Lowest cost: " << bestbestbest << endl;
+            cout << "Best path: ";
+            printPath(bestbestpath);
+        }
+        else
+        {
+            cout << "No path found" << endl;
+        }
+    }
+    if (selection == 2) 
+    {
+        start_clock = chrono::high_resolution_clock::now();
+        GeneticAlgorithm(graph, graphSize, cost, bestpath, populationSize, generations, mutationRate);
         end_clock = chrono::high_resolution_clock::now();
         chrono::duration<double> result = end_clock - start_clock;
         cout << "Time of execution: " << result.count() << "s" << endl;

@@ -1,10 +1,10 @@
 Name of file
-NAME_OF: mp9.atsp
+NAME_OF: 10.atsp
 
 BEST_KNOWN:
 
-SimmulatedAnnealing -> 1; 
-SELECTION: 1
+SimmulatedAnnealing -> 1; Genetic Algorithm -> 2 
+SELECTION: 2
 
 #SimmulatedAnnealing Settings
 INIT_TEMP: 50
