@@ -378,11 +378,33 @@ vector<long long> createoffspring(vector<long long> &parent1, vector<long long> 
 
     int start = rand() % parent1.size();
     int end = rand() % (start, parent1.size());
-    vector<long long> insertion;
-    for (int i = start; i <= end; i++)
+    vector<long long> insertion1;
+    vector<long long> insertion2;
+    for (int i = start; i < end; i++)
     {
-        insertion.push_back(parent1[i]);
+        insertion1.push_back(parent1[i]);
+        insertion2.push_back(parent2[i]);
     }
+    int splitpoint = rand() % parent1.size();
+    for (int i = 0; i < splitpoint; i++)
+    {
+        offspring1.push_back(parent1[i]);
+        offspring2.push_back(parent2[i]);
+    }
+    for (int i = splitpoint; i < insertion1.size() + splitpoint; i++)
+    {
+        offspring1.push_back(insertion2[i]);
+        offspring2.push_back(insertion1[i]);
+    }
+    end = splitpoint + insertion1.size();
+    for (int i = end; i < parent1.size(); i++)
+    {
+        offspring1.push_back(parent1[i]);
+        offspring2.push_back(parent2[i]);
+    }
+
+    
+    
     
 
 
