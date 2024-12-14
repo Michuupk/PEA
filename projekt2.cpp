@@ -32,7 +32,7 @@ long double endtemp = 0;
 long double cooling = 0;
 long long populationSize = 0;
 long long generations = 0;
-long long mutationRate = 0;
+float mutationRate = 0;
 string startall;
 int startNode = 0;
 bool all_flag = false;
@@ -314,8 +314,15 @@ long long calculateCost(vector<long long> &path, vector<vector<long long>> &grap
 {
     int cost = 0;
     for (int i = 0; i < path.size() - 1; i++)
-    {
-        cost += graph[path[i]][path[i + 1]];
+    {   
+        if(graph[path[i]][path[i + 1]] <= 0)
+        {
+            return numeric_limits<long long>::max();
+        }
+        else
+        {
+            cost += graph[path[i]][path[i + 1]];
+        }
     }
     return cost;
 }
@@ -355,7 +362,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
 
 }
 
-void generatePopulation(vector<vector<long long>> &population, long long populationSize, long long graphSize)
+void generatePopulation(vector<vector<long long>> &population, long long &populationSize, long long graphSize)
 {
     for (long long i = 0; i < populationSize; i++)
     {
@@ -368,48 +375,43 @@ void generatePopulation(vector<vector<long long>> &population, long long populat
         mt19937 g(rd());
         shuffle(path.begin(), path.end(), g);
         population.push_back(path);
+        path.clear();
     }
 }
 
-vector<long long> createoffspring(vector<long long> &parent1, vector<long long> &parent2)
+void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
 {
     vector<long long> offspring1;
     vector<long long> offspring2;
+    int start = 0;
+    int end = 0;
+    while (start == end)
+    {
+        start = rand() % (parent1.size());
+        end = start + rand() % (parent1.size() - start);
+    }
+    cout<<start<<" -> "<<end<<endl;
 
-    int start = rand() % parent1.size();
-    int end = rand() % (start, parent1.size());
     vector<long long> insertion1;
     vector<long long> insertion2;
-    for (int i = start; i < end; i++)
+    for (int i = start; i < end; i++)       //Creating insertion
     {
         insertion1.push_back(parent1[i]);
         insertion2.push_back(parent2[i]);
     }
-    int splitpoint = rand() % parent1.size();
-    for (int i = 0; i < splitpoint; i++)
-    {
-        offspring1.push_back(parent1[i]);
-        offspring2.push_back(parent2[i]);
-    }
-    for (int i = splitpoint; i < insertion1.size() + splitpoint; i++)
-    {
-        offspring1.push_back(insertion2[i]);
-        offspring2.push_back(insertion1[i]);
-    }
-    end = splitpoint + insertion1.size();
-    for (int i = end; i < parent1.size(); i++)
-    {
-        offspring1.push_back(parent1[i]);
-        offspring2.push_back(parent2[i]);
-    }
+    int insertpoint = rand() % parent1.size(); //Insertion point
 
-    
-    
-    
+    parent2.erase(remove_if(parent2.begin(), parent2.end(), [&insertion1](long long element) {  //Removing insertion from parent
+        return find(insertion1.begin(), insertion1.end(), element) != insertion1.end();
+    }), parent2.end());
 
+    parent1.erase(remove_if(parent1.begin(), parent1.end(), [&insertion2](long long element) {  //Removing insertion from parent
+        return find(insertion2.begin(), insertion2.end(), element) != insertion2.end();
+    }), parent1.end());
 
+    parent1.insert(parent1.begin() + insertpoint, insertion2.begin(), insertion2.end()); //Inserting insertion to parent
+    parent2.insert(parent2.begin() + insertpoint, insertion1.begin(), insertion1.end()); //Inserting insertion to parent
 
-    return offspring1, offspring2;
 }
 
 void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long long populationSize, long long generations, long long mutationRate)
@@ -417,11 +419,11 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
     cout << "Genetic Algorithm" << endl;
 
     vector<vector<long long>> population;
-    vector<long long> fitness;
     generatePopulation(population, populationSize, graphSize);
 
     for (long long i = 0; i < generations; i++)
     {
+        vector<long long> fitness;
         for(auto path : population){
             long long pathCost = calculateCost(path, graph);
             fitness.push_back(pathCost);
@@ -445,19 +447,23 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         vector<long long> parent1;  
         vector<long long> parent2;
         vector<vector<long long>> offspring;
-
-        parent1 = population[rand() % population.size()]; // random parent selection
-        parent2 = population[rand() % population.size()];
+        cout<<population.size()<<endl; //   debug
+        int random = rand() % population.size();
+        parent1 = population[random]; // random parent selection
+        random = rand() % population.size();
+        parent2 = population[random]; // random parent selection
         if (parent2 == parent1)
         {
             parent2 = population[rand() % population.size()]; // if parents are the same, select another one
         }
+        while (offspring.size() < populationSize) // creating offspring
+        {
+            createoffspring(parent1, parent2);
 
-        offspring.push_back(createoffspring(parent1, parent2));
-
-
-
-
+            offspring.push_back(parent1);
+            offspring.push_back(parent2);
+        }
+        population = offspring;
 
 
     }
