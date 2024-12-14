@@ -433,7 +433,16 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         int midway = population.size()/2;
         for (long long j = 0; j < midway; j++)
         {
-            if(fitness[j] < fitness[j+midway])
+            if(fitness[j] == numeric_limits<long long>::max() && fitness[j+midway] == numeric_limits<long long>::max()) // if both paths are invalid
+            {
+                continue;
+            }
+            else if(fitness[j] == fitness[j+midway])
+            {
+                newPopulation.push_back(population[j]);
+                newPopulation.push_back(population[j+midway]);
+            }
+            else if(fitness[j] < fitness[j+midway])
             {
                 newPopulation.push_back(population[j]);
             }
@@ -447,24 +456,22 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         vector<long long> parent1;  
         vector<long long> parent2;
         vector<vector<long long>> offspring;
-        cout<<population.size()<<endl; //   debug
-        int random = rand() % population.size();
-        parent1 = population[random]; // random parent selection
-        random = rand() % population.size();
-        parent2 = population[random]; // random parent selection
-        if (parent2 == parent1)
+        while (offspring.size() <= populationSize) // creating offspring
         {
-            parent2 = population[rand() % population.size()]; // if parents are the same, select another one
-        }
-        while (offspring.size() < populationSize) // creating offspring
-        {
+            int random = rand() % population.size();
+            parent1 = population[random]; // random parent selection
+            random = rand() % population.size();
+            parent2 = population[random]; // random parent selection
+            if (parent2 == parent1)
+            {
+                parent2 = population[rand() % population.size()]; // if parents are the same, select another one
+            }
             createoffspring(parent1, parent2);
 
             offspring.push_back(parent1);
             offspring.push_back(parent2);
         }
         population = offspring;
-
 
     }
 
