@@ -312,7 +312,7 @@ void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, lo
 
 long long calculateCost(vector<long long> &path, vector<vector<long long>> &graph)
 {
-    int cost = 0;
+    long long cost = 0;
     for (int i = 0; i < path.size() - 1; i++)
     {   
         if(graph[path[i]][path[i + 1]] <= 0)
@@ -361,7 +361,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
             newcost = calculateCost(newpath, graph);
         }
         while (newcost == numeric_limits<long long>::max());
-        int delta = newcost - cost;
+        long long delta = newcost - cost;
         double random = ((double) rand() / (RAND_MAX)); // random number between 0 and 1
         if (delta < 0 || random < exp(-delta / inittemp))
         {
@@ -425,6 +425,24 @@ void createoffspring(vector<long long> parent1, vector<long long> parent2)
 
 }
 
+void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize)
+{
+    for (int i = 0; i < offspring.size(); i++)
+    {
+        double random = ((double) rand() / (RAND_MAX)); // random number between 0 and 1
+        if (random < mutationRate)
+        {
+            int first = rand() % offspring[i].size();
+            if (first == offspring[i].size() - 1)
+            {
+                first--;
+            }
+            int second = first + 1;
+            swap(offspring[i][first], offspring[i][second]);
+        }
+    }
+}
+
 void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long long populationSize, long long generations, float mutationRate)
 {
     cout << "Genetic Algorithm" << endl;
@@ -469,7 +487,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         vector<vector<long long>> offspring;
         while (offspring.size() < populationSize + 1) // creating offspring
         {
-            int random = rand() % population.size();
+            long long random = rand() % (populationSize/2);
             parent1 = population[random]; // random parent selection
             int stop = 0;
             do
@@ -483,26 +501,39 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
 
             offspring.push_back(parent1);
             offspring.push_back(parent2);
+
+
+            mutateoffspring(offspring, graphSize); // mutation
         }
         population.swap(offspring);
+        population.resize(populationSize);
+
+        for(auto path : population){
+            long long pathCost = calculateCost(path, graph);
+            if(pathCost < cost)
+            {
+                cost = pathCost;
+                bestpath = path;
+            }
+        }
 
     }
 
 }
 
-void validPath(vector<long long> &bestpath) // function checking if every city is visited only once
+void validPath(vector<long long> path) // function checking if every city is visited only once
 {
-    if (bestpath.size() != graphSize)
+    if (path.size() != graphSize)
     {
         cout << endl
              << "Path is invalid" << endl;
         return;
     }
-    for (int i = 0; i < bestpath.size(); i++)
+    for (int i = 0; i < path.size(); i++)
     {
-        for (int j = i + 1; j < bestpath.size(); j++)
+        for (int j = i + 1; j < path.size(); j++)
         {
-            if (bestpath[i] == bestpath[j])
+            if (path[i] == path[j])
             {
                 cout << endl
                      << "Path is invalid" << endl;
@@ -529,7 +560,6 @@ int main()
     long long topLimit = 0;
 
     nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
-    bestbestpath = bestpath;
 
     chrono::time_point<std::chrono::high_resolution_clock> start_clock, end_clock; // variables for time measurement
 
@@ -561,11 +591,14 @@ int main()
         end_clock = chrono::high_resolution_clock::now();
         chrono::duration<double> result = end_clock - start_clock;
         cout << "Time of execution: " << result.count() << "s" << endl;
-        if (bestbestbest != numeric_limits<long long>::max())
+        if (cost != numeric_limits<long long>::max())
         {
-            cout << "Lowest cost: " << bestbestbest << endl;
-            cout << "Best path: ";
-            printPath(bestbestpath);
+            cout << "Lowest cost: " << cost << endl;
+            if (bestpath.size() < 20)
+            {
+                cout << "Best path: ";
+                printPath(bestpath);
+            }
         }
         else
         {
@@ -573,7 +606,7 @@ int main()
         }
     }
 
-    validPath(bestbestpath);
+    validPath(bestpath); // checking if path is valid
     cout << endl
          << "End of program" << endl;
     cin.get();
