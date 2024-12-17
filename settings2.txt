@@ -1,19 +1,19 @@
 Name of file
-NAME_OF: 10.atsp
+NAME_OF: rbg323.atsp
 
 BEST_KNOWN:
 
 SimmulatedAnnealing -> 1; Genetic Algorithm -> 2 
-SELECTION: 2
+SELECTION: 1
 
 #SimmulatedAnnealing Settings
-INIT_TEMP: 50
+INIT_TEMP: 99999999999999
 MIN_TEMP: 0
-COOLING_RATE: 0.1
+COOLING_RATE: 0.15
 
 #Genetic Algorithm Settings
-POPULATION_SIZE: 6 
-GENERATIONS: 5
+POPULATION_SIZE: 5
+GENERATIONS: 4
 MUTATION_RATE: 0.1
 
 

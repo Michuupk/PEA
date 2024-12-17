@@ -236,7 +236,7 @@ void LoadGraph(vector<vector<long long>> &graph, vector<vector<long long>> &grap
     //         cout << graphAdjacency[i][j] << " ";
     //     }
     //     cout << endl;
-    //}
+    // }
 
     graphFile.close();
 }
@@ -344,13 +344,25 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
 {
     cout << "Simulated Annealing" << endl;
 
+    auto startTimer = chrono::high_resolution_clock::now();
+
     while (inittemp > endtemp)
     {
-        vector<long long> newpath = generateNeighbour(bestpath);
-        long long newcost = calculateCost(newpath, graph);
+        if (chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now() - startTimer).count() > maxTime * 60)
+        {
+            cout << "Time limit exceeded (30 minutes)" << endl;
+            break;
+        }
+        vector<long long> newpath;
+        long long newcost = 0;
+        do
+        {
+            newpath = generateNeighbour(bestpath);
+            newcost = calculateCost(newpath, graph);
+        }
+        while (newcost == numeric_limits<long long>::max());
         int delta = newcost - cost;
-        double random = ((double) rand() / (RAND_MAX));
-        cout<<random<<endl;
+        double random = ((double) rand() / (RAND_MAX)); // random number between 0 and 1
         if (delta < 0 || random < exp(-delta / inittemp))
         {
             bestpath = newpath;
@@ -379,7 +391,7 @@ void generatePopulation(vector<vector<long long>> &population, long long &popula
     }
 }
 
-void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
+void createoffspring(vector<long long> parent1, vector<long long> parent2)
 {
     vector<long long> offspring1;
     vector<long long> offspring2;
@@ -390,8 +402,6 @@ void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
         start = rand() % (parent1.size());
         end = start + rand() % (parent1.size() - start);
     }
-    cout<<start<<" -> "<<end<<endl;
-
     vector<long long> insertion1;
     vector<long long> insertion2;
     for (int i = start; i < end; i++)       //Creating insertion
@@ -399,7 +409,8 @@ void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
         insertion1.push_back(parent1[i]);
         insertion2.push_back(parent2[i]);
     }
-    int insertpoint = rand() % parent1.size(); //Insertion point
+    int insertpoint = parent1.size();
+    insertpoint = rand() % (insertpoint); //Insertion point
 
     parent2.erase(remove_if(parent2.begin(), parent2.end(), [&insertion1](long long element) {  //Removing insertion from parent
         return find(insertion1.begin(), insertion1.end(), element) != insertion1.end();
@@ -414,7 +425,7 @@ void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
 
 }
 
-void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long long populationSize, long long generations, long long mutationRate)
+void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long long populationSize, long long generations, float mutationRate)
 {
     cout << "Genetic Algorithm" << endl;
 
@@ -452,26 +463,28 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
             }
         }
         fitness.clear();
-        population = newPopulation; // survivors become new population
+        population.swap(newPopulation); // survivors become new population
         vector<long long> parent1;  
         vector<long long> parent2;
         vector<vector<long long>> offspring;
-        while (offspring.size() <= populationSize) // creating offspring
+        while (offspring.size() < populationSize + 1) // creating offspring
         {
             int random = rand() % population.size();
             parent1 = population[random]; // random parent selection
-            random = rand() % population.size();
-            parent2 = population[random]; // random parent selection
-            if (parent2 == parent1)
+            int stop = 0;
+            do
             {
-                parent2 = population[rand() % population.size()]; // if parents are the same, select another one
+                random = rand() % population.size();
+                parent2 = population[random]; // random parent selection
+                stop++;
             }
+            while (parent2 == parent1 && stop < 100);
             createoffspring(parent1, parent2);
 
             offspring.push_back(parent1);
             offspring.push_back(parent2);
         }
-        population = offspring;
+        population.swap(offspring);
 
     }
 
@@ -517,8 +530,6 @@ int main()
 
     nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
     bestbestpath = bestpath;
-    //topLimit = cost;
-    //cout<<"Top limit set at: "<<topLimit<<endl;
 
     chrono::time_point<std::chrono::high_resolution_clock> start_clock, end_clock; // variables for time measurement
 
@@ -529,11 +540,14 @@ int main()
         end_clock = chrono::high_resolution_clock::now();
         chrono::duration<double> result = end_clock - start_clock;
         cout << "Time of execution: " << result.count() << "s" << endl;
-        if (bestbestbest != numeric_limits<long long>::max())
+        if (cost != numeric_limits<long long>::max())
         {
-            cout << "Lowest cost: " << bestbestbest << endl;
-            cout << "Best path: ";
-            printPath(bestbestpath);
+            cout << "Lowest cost: " << cost << endl;
+            if (bestpath.size() < 20)
+            {
+                cout << "Best path: ";
+                printPath(bestpath);
+            }
         }
         else
         {
