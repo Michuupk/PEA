@@ -241,7 +241,7 @@ void LoadGraph(vector<vector<long long>> &graph, vector<vector<long long>> &grap
     graphFile.close();
 }
 
-void printPath(const vector<long long> &path){
+void printPath(const vector<long long> path){
     for (auto node : path)
     {
         cout << node << " ";
@@ -310,7 +310,7 @@ void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, lo
     }
 }
 
-long long calculateCost(vector<long long> &path, vector<vector<long long>> &graph)
+long long calculateCost(vector<long long> path, vector<vector<long long>> graph)
 {
     long long cost = 0;
     for (int i = 0; i < path.size() - 1; i++)
@@ -340,7 +340,7 @@ vector<long long> generateNeighbour(vector<long long> &path)
     return newPath;
 }
 
-void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long double inittemp, long double endtemp, long double cooling)
+void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long double &inittemp, long double &endtemp, long double &cooling)
 {
     cout << "Simulated Annealing" << endl;
 
@@ -374,7 +374,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
 
 }
 
-void generatePopulation(vector<vector<long long>> &population, long long &populationSize, long long graphSize)
+void generatePopulation(vector<vector<long long>> &population, long long &populationSize, long long &graphSize)
 {
     for (long long i = 0; i < populationSize; i++)
     {
@@ -391,13 +391,12 @@ void generatePopulation(vector<vector<long long>> &population, long long &popula
     }
 }
 
-void createoffspring(vector<long long> parent1, vector<long long> parent2)
+void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
 {
-    vector<long long> offspring1;
-    vector<long long> offspring2;
     int start = 0;
     int end = 0;
-    while (start == end)
+
+    while (start == end && end - start > graphSize - 1) 
     {
         start = rand() % (parent1.size());
         end = start + rand() % (parent1.size() - start);
@@ -423,6 +422,9 @@ void createoffspring(vector<long long> parent1, vector<long long> parent2)
     parent1.insert(parent1.begin() + insertpoint, insertion2.begin(), insertion2.end()); //Inserting insertion to parent
     parent2.insert(parent2.begin() + insertpoint, insertion1.begin(), insertion1.end()); //Inserting insertion to parent
 
+    insertion1.clear();
+    insertion2.clear();
+
 }
 
 void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize)
@@ -443,7 +445,7 @@ void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize)
     }
 }
 
-void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long long populationSize, long long generations, float mutationRate)
+void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long long &populationSize, long long &generations, float &mutationRate)
 {
     cout << "Genetic Algorithm" << endl;
 
@@ -453,8 +455,9 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
     for (long long i = 0; i < generations; i++)
     {
         vector<long long> fitness;
+        int pathCost = 0;
         for(auto path : population){
-            long long pathCost = calculateCost(path, graph);
+            pathCost = calculateCost(path, graph);
             fitness.push_back(pathCost);
         }
         
@@ -482,10 +485,11 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         }
         fitness.clear();
         population.swap(newPopulation); // survivors become new population
+        newPopulation.clear();
         vector<long long> parent1;  
         vector<long long> parent2;
         vector<vector<long long>> offspring;
-        while (offspring.size() < populationSize + 1) // creating offspring
+        while (offspring.size() < populationSize + 2) // creating offspring
         {
             long long random = rand() % (populationSize/2);
             parent1 = population[random]; // random parent selection
@@ -501,22 +505,28 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
 
             offspring.push_back(parent1);
             offspring.push_back(parent2);
+            parent1.clear();
+            parent2.clear();
 
-
-            mutateoffspring(offspring, graphSize); // mutation
         }
+        // mutateoffspring(offspring, graphSize); // mutation
+        
         population.swap(offspring);
         population.resize(populationSize);
 
+        offspring.clear();
+
         for(auto path : population){
-            long long pathCost = calculateCost(path, graph);
+            pathCost = calculateCost(path, graph);
             if(pathCost < cost)
             {
                 cost = pathCost;
                 bestpath = path;
             }
         }
+        
 
+        
     }
 
 }
