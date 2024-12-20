@@ -7,9 +7,9 @@ SimmulatedAnnealing -> 1; Genetic Algorithm -> 2
 SELECTION: 2
 
 #SimmulatedAnnealing Settings
-INIT_TEMP: 99999999999999
+INIT_TEMP: 100
 MIN_TEMP: 0
-COOLING_RATE: 0.15
+COOLING_RATE: 0.01
 
 #Genetic Algorithm Settings
 POPULATION_SIZE: 10000

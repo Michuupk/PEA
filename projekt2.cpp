@@ -324,6 +324,7 @@ long long calculateCost(vector<long long> &path, vector<vector<long long>> &grap
             cost += graph[path[i]][path[i + 1]];
         }
     }
+    cost += graph[path[path.size() - 1]][path[0]];
     return cost;
 }
 
@@ -376,18 +377,16 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
 
 void generatePopulation(vector<vector<long long>> &population, long long &populationSize, long long graphSize)
 {
+    population.reserve(populationSize);
     for (long long i = 0; i < populationSize; i++)
     {
-        vector<long long> path;
-        for (long long j = 0; j < graphSize; j++)
-        {
-            path.push_back(j);
-        }
+        vector<long long> path(graphSize);
+        iota(path.begin(), path.end(), 0);
+        
         random_device rd;
         mt19937 g(rd());
         shuffle(path.begin(), path.end(), g);
-        population.push_back(path);
-        path.clear();
+        population.push_back(move(path));
     }
 }
 
@@ -412,11 +411,11 @@ void createoffspring(vector<long long> parent1, vector<long long> parent2)
     int insertpoint = parent1.size();
     insertpoint = rand() % (insertpoint); //Insertion point
 
-    parent2.erase(remove_if(parent2.begin(), parent2.end(), [&insertion1](long long element) {  //Removing insertion from parent
+    parent2.erase(remove_if(parent2.begin(), parent2.end(), [&insertion1](long long element) {  //Removing values of insertion1 from parent2
         return find(insertion1.begin(), insertion1.end(), element) != insertion1.end();
     }), parent2.end());
 
-    parent1.erase(remove_if(parent1.begin(), parent1.end(), [&insertion2](long long element) {  //Removing insertion from parent
+    parent1.erase(remove_if(parent1.begin(), parent1.end(), [&insertion2](long long element) {  //Removing values of insertion2 from parent1
         return find(insertion2.begin(), insertion2.end(), element) != insertion2.end();
     }), parent1.end());
 
@@ -425,7 +424,7 @@ void createoffspring(vector<long long> parent1, vector<long long> parent2)
 
 }
 
-void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize)
+void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize, float &mutationRate)
 {
     for (int i = 0; i < offspring.size(); i++)
     {
@@ -503,7 +502,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
             offspring.push_back(parent2);
 
 
-            mutateoffspring(offspring, graphSize); // mutation
+            mutateoffspring(offspring, graphSize, mutationRate); // mutation
         }
         population.swap(offspring);
         population.resize(populationSize);
