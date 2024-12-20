@@ -80,7 +80,7 @@ void loadSettings()
             iss >> label >> startNode;
             cout << "Start node: " << startNode << endl;
         }
-        if (selection == 1) //for AS
+        if (selection == 1) // for AS
         {
             if (myText.find("INIT_TEMP") != string::npos)
             {
@@ -100,7 +100,8 @@ void loadSettings()
                 string label;
                 iss >> label >> cooling;
             }
-        } else if (selection == 2) //for Genetic Algorithm
+        }
+        else if (selection == 2) // for Genetic Algorithm
         {
             if (myText.find("POPULATION_SIZE") != string::npos)
             {
@@ -241,7 +242,8 @@ void LoadGraph(vector<vector<long long>> &graph, vector<vector<long long>> &grap
     graphFile.close();
 }
 
-void printPath(const vector<long long> path){
+void printPath(const vector<long long> path)
+{
     for (auto node : path)
     {
         cout << node << " ";
@@ -314,8 +316,8 @@ long long calculateCost(vector<long long> path, vector<vector<long long>> graph)
 {
     long long cost = 0;
     for (int i = 0; i < path.size() - 1; i++)
-    {   
-        if(graph[path[i]][path[i + 1]] <= 0)
+    {
+        if (graph[path[i]][path[i + 1]] <= 0)
         {
             return numeric_limits<long long>::max();
         }
@@ -341,7 +343,7 @@ vector<long long> generateNeighbour(vector<long long> &path)
     return newPath;
 }
 
-void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long double &inittemp, long double &endtemp, long double &cooling)
+void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long double inittemp, long double &endtemp, long double &cooling)
 {
     cout << "Simulated Annealing" << endl;
 
@@ -360,10 +362,9 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         {
             newpath = generateNeighbour(bestpath);
             newcost = calculateCost(newpath, graph);
-        }
-        while (newcost == numeric_limits<long long>::max());
+        } while (newcost == numeric_limits<long long>::max());
         long long delta = newcost - cost;
-        double random = ((double) rand() / (RAND_MAX)); // random number between 0 and 1
+        double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
         if (delta < 0 || random < exp(-delta / inittemp))
         {
             bestpath = newpath;
@@ -371,8 +372,6 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         }
         inittemp *= cooling;
     }
-    
-
 }
 
 void generatePopulation(vector<vector<long long>> &population, long long &populationSize, long long &graphSize)
@@ -382,7 +381,7 @@ void generatePopulation(vector<vector<long long>> &population, long long &popula
     {
         vector<long long> path(graphSize);
         iota(path.begin(), path.end(), 0);
-        
+
         random_device rd;
         mt19937 g(rd());
         shuffle(path.begin(), path.end(), g);
@@ -395,42 +394,43 @@ void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
     int start = 0;
     int end = 0;
 
-    while (start == end && end - start > graphSize - 1) 
+    while (start == end && end - start > graphSize - 1)
     {
         start = rand() % (parent1.size());
         end = start + rand() % (parent1.size() - start);
     }
     vector<long long> insertion1;
     vector<long long> insertion2;
-    for (int i = start; i < end; i++)       //Creating insertion
+    for (int i = start; i < end; i++) // Creating insertion
     {
         insertion1.push_back(parent1[i]);
         insertion2.push_back(parent2[i]);
     }
     int insertpoint = parent1.size();
-    insertpoint = rand() % (insertpoint); //Insertion point
+    insertpoint = rand() % (insertpoint); // Insertion point
 
-    parent2.erase(remove_if(parent2.begin(), parent2.end(), [&insertion1](long long element) {  //Removing values of insertion1 from parent2
-        return find(insertion1.begin(), insertion1.end(), element) != insertion1.end();
-    }), parent2.end());
+    parent2.erase(remove_if(parent2.begin(), parent2.end(), [&insertion1](long long element) { // Removing values of insertion1 from parent2
+                      return find(insertion1.begin(), insertion1.end(), element) != insertion1.end();
+                  }),
+                  parent2.end());
 
-    parent1.erase(remove_if(parent1.begin(), parent1.end(), [&insertion2](long long element) {  //Removing values of insertion2 from parent1
-        return find(insertion2.begin(), insertion2.end(), element) != insertion2.end();
-    }), parent1.end());
+    parent1.erase(remove_if(parent1.begin(), parent1.end(), [&insertion2](long long element) { // Removing values of insertion2 from parent1
+                      return find(insertion2.begin(), insertion2.end(), element) != insertion2.end();
+                  }),
+                  parent1.end());
 
-    parent1.insert(parent1.begin() + insertpoint, insertion2.begin(), insertion2.end()); //Inserting insertion to parent
-    parent2.insert(parent2.begin() + insertpoint, insertion1.begin(), insertion1.end()); //Inserting insertion to parent
+    parent1.insert(parent1.begin() + insertpoint, insertion2.begin(), insertion2.end()); // Inserting insertion to parent
+    parent2.insert(parent2.begin() + insertpoint, insertion1.begin(), insertion1.end()); // Inserting insertion to parent
 
     insertion1.clear();
     insertion2.clear();
-
 }
 
 void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize, float &mutationRate)
 {
     for (int i = 0; i < offspring.size(); i++)
     {
-        double random = ((double) rand() / (RAND_MAX)); // random number between 0 and 1
+        double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
         if (random < mutationRate)
         {
             int first = rand() % offspring[i].size();
@@ -455,42 +455,43 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
     {
         vector<long long> fitness;
         int pathCost = 0;
-        for(auto path : population){
+        for (auto path : population)
+        {
             pathCost = calculateCost(path, graph);
             fitness.push_back(pathCost);
         }
-        
-        vector<vector<long long>> newPopulation;        // survivors
-        int midway = population.size()/2;
+
+        vector<vector<long long>> newPopulation; // survivors
+        int midway = population.size() / 2;
         for (long long j = 0; j < midway; j++)
         {
-            if(fitness[j] == numeric_limits<long long>::max() && fitness[j+midway] == numeric_limits<long long>::max()) // if both paths are invalid
+            if (fitness[j] == numeric_limits<long long>::max() && fitness[j + midway] == numeric_limits<long long>::max()) // if both paths are invalid
             {
                 continue;
             }
-            else if(fitness[j] == fitness[j+midway])
+            else if (fitness[j] == fitness[j + midway])
             {
                 newPopulation.push_back(population[j]);
-                newPopulation.push_back(population[j+midway]);
+                newPopulation.push_back(population[j + midway]);
             }
-            else if(fitness[j] < fitness[j+midway])
+            else if (fitness[j] < fitness[j + midway])
             {
                 newPopulation.push_back(population[j]);
             }
             else
             {
-                newPopulation.push_back(population[j+midway]);
+                newPopulation.push_back(population[j + midway]);
             }
         }
         fitness.clear();
         population.swap(newPopulation); // survivors become new population
         newPopulation.clear();
-        vector<long long> parent1;  
+        vector<long long> parent1;
         vector<long long> parent2;
         vector<vector<long long>> offspring;
-        while (offspring.size() < populationSize + 2) // creating offspring
+        while (offspring.size() < populationSize + 1) // creating offspring
         {
-            long long random = rand() % (populationSize/2);
+            long long random = rand() % (populationSize / 2);
             parent1 = population[random]; // random parent selection
             int stop = 0;
             do
@@ -498,37 +499,31 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
                 random = rand() % population.size();
                 parent2 = population[random]; // random parent selection
                 stop++;
-            }
-            while (parent2 == parent1 && stop < 100);
+            } while (parent2 == parent1 && stop < 100);
             createoffspring(parent1, parent2);
 
             offspring.push_back(parent1);
             offspring.push_back(parent2);
             parent1.clear();
             parent2.clear();
-
-            mutateoffspring(offspring, graphSize, mutationRate); // mutation
         }
-        // mutateoffspring(offspring, graphSize); // mutation
-        
+        mutateoffspring(offspring, graphSize, mutationRate); // mutation
+
         population.swap(offspring);
         population.resize(populationSize);
 
         offspring.clear();
 
-        for(auto path : population){
+        for (auto path : population)
+        {
             pathCost = calculateCost(path, graph);
-            if(pathCost < cost)
+            if (pathCost < cost)
             {
                 cost = pathCost;
                 bestpath = path;
             }
         }
-        
-
-        
     }
-
 }
 
 void validPath(vector<long long> path) // function checking if every city is visited only once
@@ -573,7 +568,7 @@ int main()
 
     chrono::time_point<std::chrono::high_resolution_clock> start_clock, end_clock; // variables for time measurement
 
-    if (selection == 1) 
+    if (selection == 1)
     {
         start_clock = chrono::high_resolution_clock::now();
         SimulatedAnnealing(graph, graphSize, cost, bestpath, inittemp, endtemp, cooling);
@@ -594,7 +589,7 @@ int main()
             cout << "No path found" << endl;
         }
     }
-    if (selection == 2) 
+    if (selection == 2)
     {
         start_clock = chrono::high_resolution_clock::now();
         GeneticAlgorithm(graph, graphSize, cost, bestpath, populationSize, generations, mutationRate);

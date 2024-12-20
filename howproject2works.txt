@@ -1,0 +1,25 @@
+SA:
+Robi nearestNeighbour, i znajduje sąsiada, wybierając losowy element ścieżki
+Swap z sąsiadem
+Oblicz koszt, dopóki ścieżka jest prawidłowa (dla niepełnych) //bez hamulca
+oblicza deltę (nowykoszt - starykoszt)
+Jesli delta jest ujemna, to jest to nowa ścieżka jest krótsza
+Jesli nie to prawdopodobieństwo musi być większe od losowej <0,1>
+mamy zwycięzcę lub nie
+ochłodzenie
+dopóki ochłodzenie nie jest takie jak sie przykazało czyli 0
+
+Genetic:
+Dostaje wielkość populacji, ile generacji i jak często ma się mutować
+generuje populace, robiąc ścięzko od 0 do N i mieszając
+dopóki populacja nie jest wystarczjąco duża
+robi fitness(koszt) dla każdej ścieżki
+dzieli na pół środkiem
+porównuje "i" z "i+środek" i wybiera krótszą, oraz omija nieprawidłowe
+to jest nowa populacja
+wybieranych jest dwóch różnych rodziców i na zasadzie krzyżowej -> 2 potomków
+i tak dopóki nie stworzy się na nowo początkowa wielkośc populacji
+Każdy potomek ma szansę na mutację
+mutationRate > random, czyli jeśli się da większe mutationRate to większa szansa na mutację
+nie ma gwarancji mutacji (każda zmienna zmienia szanse właściwie, ale głównie wielkość populacji)
+oblicza koszty wszystkich ścieżek i znajduje najlepszą
