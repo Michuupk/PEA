@@ -1,5 +1,5 @@
 Name of file
-NAME_OF: m10.atsp
+NAME_OF: 10.atsp
 
 BEST_KNOWN:
 
@@ -8,12 +8,14 @@ SELECTION: 2
 
 #SimmulatedAnnealing Settings
 INIT_TEMP: 100
+INIT_TEMP: 99999
 MIN_TEMP: 0
+COOLING_RATE: 0.01
 COOLING_RATE: 0.01
 
 #Genetic Algorithm Settings
 POPULATION_SIZE: 10000
-GENERATIONS: 10
+GENERATIONS: 100
 MUTATION_RATE: 0.5
 
 
