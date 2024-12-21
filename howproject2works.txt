@@ -7,7 +7,7 @@ Jesli delta jest ujemna, to jest to nowa ścieżka jest krótsza
 Jesli nie to prawdopodobieństwo musi być większe od losowej <0,1>
 mamy zwycięzcę lub nie
 ochłodzenie
-dopóki ochłodzenie nie jest takie jak sie przykazało czyli 0
+dopóki ochłodzenie nie jest takie jak sie przykazało czyli 0.1
 
 Genetic:
 Dostaje wielkość populacji, ile generacji i jak często ma się mutować

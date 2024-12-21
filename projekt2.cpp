@@ -21,8 +21,6 @@ long long graphSize;
 vector<vector<long long>> graph;
 vector<vector<long long>> graphAdjacency;
 vector<long long> bestpath;
-vector<long long> bestbestpath;
-long long bestbestbest = numeric_limits<long long>::max();
 
 // Settings variables
 int selection = 0; // 1 - Simulated Annealing, 2 - Genetic Algorithm
@@ -33,9 +31,7 @@ long double cooling = 0;
 long long populationSize = 0;
 long long generations = 0;
 float mutationRate = 0;
-string startall;
-int startNode = 0;
-bool all_flag = false;
+int random_init = 0;
 
 long long maxTime = 30; // 30 minutes by default (minutes defined in program)
 
@@ -62,26 +58,16 @@ void loadSettings()
             string label;
             iss >> label >> selection;
         }
-        if (myText.find("START_NODE: ALL") != string::npos)
-        {
-            istringstream iss(myText);
-            string label;
-            iss >> label >> startall;
-            cout << "Start node: " << startall << endl;
-            if (startall == "ALL")
-            {
-                all_flag = true;
-            }
-        }
-        if (myText.find("START_NODE") != string::npos)
-        {
-            istringstream iss(myText);
-            string label;
-            iss >> label >> startNode;
-            cout << "Start node: " << startNode << endl;
-        }
+        
         if (selection == 1) // for AS
         {
+            if (myText.find("RANDOM_INIT") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> random_init;
+                
+            }
             if (myText.find("INIT_TEMP") != string::npos)
             {
                 istringstream iss(myText);
@@ -251,6 +237,25 @@ void printPath(const vector<long long> path)
     cout << endl;
 }
 
+long long calculateCost(vector<long long> path, vector<vector<long long>> graph)
+{
+    long long cost = 0;
+    for (int i = 0; i < path.size() - 1; i++)
+    {
+        if (graph[path[i]][path[i + 1]] <= 0)
+        {
+            return numeric_limits<long long>::max();
+        }
+        else
+        {
+            cost += graph[path[i]][path[i + 1]];
+        }
+    }
+    cost += graph[path[path.size() - 1]][path[0]];
+    return cost;
+}
+
+
 void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath)
 {
     cout << "Nearest Neighbour" << endl;
@@ -312,33 +317,27 @@ void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, lo
     }
 }
 
-long long calculateCost(vector<long long> path, vector<vector<long long>> graph)
+void generateRandomPath(long long cost, vector<long long>bestpath, vector<vector<long long>> graph, long long graphSize)
 {
-    long long cost = 0;
-    for (int i = 0; i < path.size() - 1; i++)
-    {
-        if (graph[path[i]][path[i + 1]] <= 0)
-        {
-            return numeric_limits<long long>::max();
-        }
-        else
-        {
-            cost += graph[path[i]][path[i + 1]];
-        }
-    }
-    cost += graph[path[path.size() - 1]][path[0]];
-    return cost;
+    bestpath.reserve(graphSize);
+    iota(bestpath.begin(), bestpath.end(), 0);
+
+    random_device rd;
+    mt19937 g(rd());
+    shuffle(bestpath.begin(), bestpath.end(), g);
+
+    cost = calculateCost(bestpath, graph);
 }
 
 vector<long long> generateNeighbour(vector<long long> &path)
 {
     vector<long long> newPath = path;
     long long first = rand() % path.size();
-    if (first == path.size() - 1)
+    long long second = rand() % path.size();
+    while(second == first)
     {
-        first--;
-    }
-    long long second = first + 1;
+        second = rand() % path.size();
+    } 
     swap(newPath[first], newPath[second]);
     return newPath;
 }
@@ -360,7 +359,9 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         long long newcost = 0;
         do
         {
+            //iteracje
             newpath = generateNeighbour(bestpath);
+            
             newcost = calculateCost(newpath, graph);
         } while (newcost == numeric_limits<long long>::max());
         long long delta = newcost - cost;
@@ -370,7 +371,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
             bestpath = newpath;
             cost = newcost;
         }
-        inittemp *= cooling;
+        inittemp = inittemp - (inittemp * cooling);
     }
 }
 
@@ -566,6 +567,11 @@ int main()
 
     nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
 
+    if (random_init == 1 )
+    {
+        generateRandomPath(cost, bestpath, graph, graphSize);
+    } 
+
     chrono::time_point<std::chrono::high_resolution_clock> start_clock, end_clock; // variables for time measurement
 
     if (selection == 1)
@@ -614,6 +620,6 @@ int main()
     validPath(bestpath); // checking if path is valid
     cout << endl
          << "End of program" << endl;
-    cin.get();
+    //cin.get();
     return 0;
 }

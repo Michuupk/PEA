@@ -1,19 +1,22 @@
 Name of file
-NAME_OF: br17.atsp
+NAME_OF: 10.atsp
 
 BEST_KNOWN:
 
 SimmulatedAnnealing -> 1; Genetic Algorithm -> 2 
-SELECTION: 2
+SELECTION: 1
 
 #SimmulatedAnnealing Settings
+Default init path = NN, write 1 for random
+RANDOM_INIT: 1
 INIT_TEMP: 100
-MIN_TEMP: 0
-COOLING_RATE: 0.01
+MIN_TEMP: 0.01
+COOLING_RATE: 0.01    
+
 
 #Genetic Algorithm Settings
-POPULATION_SIZE: 1000
-GENERATIONS: 100
+POPULATION_SIZE: 10000
+GENERATIONS: 500
 MUTATION_RATE: 0.5
 
 
