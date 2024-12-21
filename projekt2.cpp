@@ -317,10 +317,13 @@ void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, lo
     }
 }
 
-void generateRandomPath(long long cost, vector<long long>bestpath, vector<vector<long long>> graph, long long graphSize)
+void generateRandomPath(long long &cost, vector<long long>&bestpath, vector<vector<long long>> &graph, long long &graphSize)
 {
     bestpath.reserve(graphSize);
-    iota(bestpath.begin(), bestpath.end(), 0);
+    for (long long i = 0; i < graphSize; i++)
+    {
+        bestpath.push_back(i);
+    }
 
     random_device rd;
     mt19937 g(rd());
@@ -565,12 +568,12 @@ int main()
     long long cost = 0;
     long long topLimit = 0;
 
-    nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
 
     if (random_init == 1 )
     {
         generateRandomPath(cost, bestpath, graph, graphSize);
-    } 
+    }
+    else nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
 
     chrono::time_point<std::chrono::high_resolution_clock> start_clock, end_clock; // variables for time measurement
 
