@@ -283,7 +283,6 @@ void printPath(const vector<long long> &path){
     cout << endl;
 }
 
-
 void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, long double &cost, vector<long long> &bestpath)
 {
     cout << "Nearest Neighbour" << endl;

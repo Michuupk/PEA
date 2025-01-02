@@ -337,7 +337,7 @@ vector<long long> generateNeighbour(vector<long long> &path)
     vector<long long> newPath = path;
     long long first = rand() % path.size();
     long long second = rand() % path.size();
-    while(second == first)
+    while(second == first || second == first + 1 || second == first - 1)
     {
         second = rand() % path.size();
     } 
@@ -623,6 +623,6 @@ int main()
     validPath(bestpath); // checking if path is valid
     cout << endl
          << "End of program" << endl;
-    //cin.get();
+    cin.get();
     return 0;
 }
