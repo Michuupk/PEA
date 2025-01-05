@@ -27,7 +27,9 @@ int selection = 0; // 1 - Simulated Annealing, 2 - Genetic Algorithm
 long long bestKnown = -1;
 long double inittemp = 0;
 long double endtemp = 0;
-long double cooling = 0;
+int epoch = 0;
+int cooling_model = 0;
+long double alpha = 0;
 long long populationSize = 0;
 long long generations = 0;
 float mutationRate = 0;
@@ -80,11 +82,23 @@ void loadSettings()
                 string label;
                 iss >> label >> endtemp;
             }
-            if (myText.find("COOLING_RATE") != string::npos)
+            if (myText.find("EPOCH_NUMBER") != string::npos)
             {
                 istringstream iss(myText);
                 string label;
-                iss >> label >> cooling;
+                iss >> label >> epoch;
+            }
+            if (myText.find("COOLING_MODEL") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> cooling_model;
+            }
+            if (myText.find("ALPHA") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> alpha;
             }
         }
         else if (selection == 2) // for Genetic Algorithm
@@ -345,13 +359,14 @@ vector<long long> generateNeighbour(vector<long long> &path)
     return newPath;
 }
 
-void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long double inittemp, long double &endtemp, long double &cooling)
+void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long double inittemp, long double &endtemp, long double &alpha)
 {
     cout << "Simulated Annealing" << endl;
 
     auto startTimer = chrono::high_resolution_clock::now();
-
-    while (inittemp > endtemp)
+    int counter = 0;
+    long double temp = inittemp;
+    while (temp > endtemp)
     {
         if (chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now() - startTimer).count() > maxTime * 60)
         {
@@ -360,21 +375,37 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         }
         vector<long long> newpath;
         long long newcost = 0;
-        do
+        for (int i = epoch; i > 0; i--)
         {
-            //iteracje
-            newpath = generateNeighbour(bestpath);
-            
-            newcost = calculateCost(newpath, graph);
-        } while (newcost == numeric_limits<long long>::max());
-        long long delta = newcost - cost;
-        double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
-        if (delta < 0 || random < exp(-delta / inittemp))
-        {
-            bestpath = newpath;
-            cost = newcost;
+            do
+            {
+
+                newpath = generateNeighbour(bestpath);
+                newcost = calculateCost(newpath, graph);
+            } while (newcost == numeric_limits<long long>::max());
+            long long delta = newcost - cost;
+            double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
+            if (delta < 0 || random < exp(-delta / temp))
+            {
+                bestpath = newpath;
+                cost = newcost;
+            }
         }
-        inittemp = inittemp - (inittemp * cooling);
+        switch(cooling_model)
+        {
+            case 1: //linear
+                temp -= alpha;
+                cout << temp << endl;
+                break;
+            case 2: //geometric
+                temp = temp * alpha;
+                cout << temp << endl;
+                break;
+            case 3: //logarithmic
+                temp = inittemp / (1 + alpha * log(1 + (++counter))); 
+                cout << temp << endl;
+                break;
+        }
     }
 }
 
@@ -580,7 +611,7 @@ int main()
     if (selection == 1)
     {
         start_clock = chrono::high_resolution_clock::now();
-        SimulatedAnnealing(graph, graphSize, cost, bestpath, inittemp, endtemp, cooling);
+        SimulatedAnnealing(graph, graphSize, cost, bestpath, inittemp, endtemp, alpha);
         end_clock = chrono::high_resolution_clock::now();
         chrono::duration<double> result = end_clock - start_clock;
         cout << "Time of execution: " << result.count() << "s" << endl;
