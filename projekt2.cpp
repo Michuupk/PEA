@@ -366,7 +366,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
     auto startTimer = chrono::high_resolution_clock::now();
     int counter = 0;
     long double temp = inittemp;
-    while (temp > endtemp)
+    while (temp > endtemp) // liczba iteracji bez powtórzeń dodać
     {
         if (chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now() - startTimer).count() > maxTime * 60)
         {
