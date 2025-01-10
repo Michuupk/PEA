@@ -11,7 +11,7 @@ SELECTION: 1
 RANDOM_INIT: 1
 INIT_TEMP: 10
 MIN_TEMP: 1
-EPOCH_NUMBER: 100
+EPOCH_NUMBER: 100  // uzależnić od wielkości instancji lub sąsiedztwa(cokolwiek to znaczy)
 //Cooling model: 1 -> linear; 2 -> Geometric; 3 -> Logarithmic
 COOLING_MODEL: 3;
 ALPHA: 0.95  

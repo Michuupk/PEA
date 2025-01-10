@@ -467,7 +467,7 @@ void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize,
         double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
         if (random < mutationRate)
         {
-            int first = rand() % offspring[i].size();
+            int first = rand() % offspring[i].size(); // swapa ulepszyć
             if (first == offspring[i].size() - 1)
             {
                 first--;
@@ -485,7 +485,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
     vector<vector<long long>> population;
     generatePopulation(population, populationSize, graphSize);
 
-    for (long long i = 0; i < generations; i++)
+    for (long long i = 0; i < generations; i++) //dodać czas
     {
         vector<long long> fitness;
         int pathCost = 0;
@@ -497,7 +497,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
 
         vector<vector<long long>> newPopulation; // survivors
         int midway = population.size() / 2;
-        for (long long j = 0; j < midway; j++)
+        for (long long j = 0; j < midway; j++) // //zrobić więcej metod poza turniejem i ruletke zrobić
         {
             if (fitness[j] == numeric_limits<long long>::max() && fitness[j + midway] == numeric_limits<long long>::max()) // if both paths are invalid
             {
@@ -521,7 +521,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         population.swap(newPopulation); // survivors become new population
         newPopulation.clear();
         vector<long long> parent1;
-        vector<long long> parent2;
+        vector<long long> parent2; // decyzje czy ci rodzice mogą się rozmnożyć
         vector<vector<long long>> offspring;
         while (offspring.size() < populationSize + 1) // creating offspring
         {
@@ -542,6 +542,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
             parent2.clear();
         }
         mutateoffspring(offspring, graphSize, mutationRate); // mutation
+        //sukcesje pokminić czy wszyscy, czy jakaś starszyzna?
 
         population.swap(offspring);
         population.resize(populationSize);
