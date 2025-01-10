@@ -379,7 +379,6 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         {
             do
             {
-
                 newpath = generateNeighbour(bestpath);
                 newcost = calculateCost(newpath, graph);
             } while (newcost == numeric_limits<long long>::max());
