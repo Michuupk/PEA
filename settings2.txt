@@ -4,7 +4,7 @@ NAME_OF: 10.atsp
 BEST_KNOWN:
 
 SimmulatedAnnealing -> 1; Genetic Algorithm -> 2 
-SELECTION: 1
+SELECTION: 2
 
 #SimmulatedAnnealing Settings
 //Default init path = NN, write 1 for random
@@ -18,9 +18,11 @@ ALPHA: 0.95
 
 
 #Genetic Algorithm Settings
-POPULATION_SIZE: 10000
-GENERATIONS: 500
+POPULATION_SIZE: 1000
+GENERATIONS: 300
 MUTATION_RATE: 0.5
+//Type of selection Tournament -> 1, Roulette -> 2
+TYPE_OF_SELECTION: 2
 
 
 Time limit in minutes

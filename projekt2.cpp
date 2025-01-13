@@ -33,6 +33,7 @@ long double alpha = 0;
 long long populationSize = 0;
 long long generations = 0;
 float mutationRate = 0;
+int selectionType = 0;
 int random_init = 0;
 
 long long maxTime = 30; // 30 minutes by default (minutes defined in program)
@@ -54,7 +55,7 @@ void loadSettings()
             string label;
             iss >> label >> filename;
         }
-        if (myText.find("SELECTION") != string::npos)
+        if (myText.find("SELECTION") != string::npos && selection == 0)
         {
             istringstream iss(myText);
             string label;
@@ -123,6 +124,13 @@ void loadSettings()
                 string label;
                 iss >> label >> mutationRate;
                 cout << "Mutation rate: " << mutationRate << endl;
+            }
+            if (myText.find("TYPE_OF_SELECTION:") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> selectionType;
+                cout << "Selection Type: " << selectionType << endl;
             }
         }
         if (myText.find("TIME_LIMIT") != string::npos)
@@ -467,12 +475,20 @@ void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize,
         double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
         if (random < mutationRate)
         {
-            int first = rand() % offspring[i].size(); // swapa ulepszyć
+            int first = rand() % offspring[i].size(); 
             if (first == offspring[i].size() - 1)
             {
                 first--;
             }
-            int second = first + 1;
+            int second = rand() % offspring[i].size();
+            if (second == offspring[i].size() - 1)
+            {
+                second--;
+            }else
+            {
+                while(second == first || second == first + 1 || second == first - 1)
+                second = rand() % offspring[i].size();
+            }
             swap(offspring[i][first], offspring[i][second]);
         }
     }
@@ -482,12 +498,18 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
 {
     cout << "Genetic Algorithm" << endl;
 
+    auto startTimer = chrono::high_resolution_clock::now();
     vector<vector<long long>> population;
     generatePopulation(population, populationSize, graphSize);
 
-    for (long long i = 0; i < generations; i++) //dodać czas
+    for (long long i = 0; i < generations; i++)
     {
-        vector<long long> fitness;
+        if (chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now() - startTimer).count() > maxTime * 60)
+        {
+            cout << "Time limit exceeded (30 minutes)" << endl;
+            break;
+        }
+        vector<long double> fitness;
         int pathCost = 0;
         for (auto path : population)
         {
@@ -495,28 +517,63 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
             fitness.push_back(pathCost);
         }
 
-        vector<vector<long long>> newPopulation; // survivors
+        vector<vector<long long>> newPopulation;
         int midway = population.size() / 2;
-        for (long long j = 0; j < midway; j++) // //zrobić więcej metod poza turniejem i ruletke zrobić
+        if (selectionType == 1)
         {
-            if (fitness[j] == numeric_limits<long long>::max() && fitness[j + midway] == numeric_limits<long long>::max()) // if both paths are invalid
+            for (long long j = 0; j < midway; j++) // tournament selection
             {
-                continue;
-            }
-            else if (fitness[j] == fitness[j + midway])
-            {
-                newPopulation.push_back(population[j]);
-                newPopulation.push_back(population[j + midway]);
-            }
-            else if (fitness[j] < fitness[j + midway])
-            {
-                newPopulation.push_back(population[j]);
-            }
-            else
-            {
-                newPopulation.push_back(population[j + midway]);
+                if (fitness[j] == numeric_limits<long long>::max() && fitness[j + midway] == numeric_limits<long long>::max()) // if both paths are invalid
+                {
+                    continue;
+                }
+                else if (fitness[j] == fitness[j + midway])
+                {
+                    newPopulation.push_back(population[j]);
+                    newPopulation.push_back(population[j + midway]);
+                }
+                else if (fitness[j] < fitness[j + midway])
+                {
+                    newPopulation.push_back(population[j]);
+                }
+                else
+                {
+                    newPopulation.push_back(population[j + midway]);
+                }
             }
         }
+        else if (selectionType == 2) // roulette wheel selection
+        {
+            long double sum = 0;
+            long double probability = 0;
+            long double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
+            sum = accumulate(fitness.begin(), fitness.end(), 0);
+            for (long long i = 0; i < fitness.size(); i++)
+            {
+                probability = fitness[i] / sum;
+                fitness[i] = probability;
+            }
+            for (long long i = 0; i < fitness.size(); i++)
+            {
+                if (i!=0)
+                {
+                    fitness[i] += fitness[i-1];
+                }
+            }
+            for (long long i = 0; i < midway; i++)
+            {
+                random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
+                for (long long j = 0; j < fitness.size(); j++)
+                {
+                    if (random < fitness[j])
+                    {
+                            newPopulation.push_back(population[j]);
+                            break;
+                    }
+                }
+            }
+        }
+        
         fitness.clear();
         population.swap(newPopulation); // survivors become new population
         newPopulation.clear();
@@ -525,7 +582,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         vector<vector<long long>> offspring;
         while (offspring.size() < populationSize + 1) // creating offspring
         {
-            long long random = rand() % (populationSize / 2);
+            long long random = rand() % (population.size());
             parent1 = population[random]; // random parent selection
             int stop = 0;
             do
