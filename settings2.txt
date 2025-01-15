@@ -18,11 +18,16 @@ ALPHA: 0.95
 
 
 #Genetic Algorithm Settings
-POPULATION_SIZE: 1000
-GENERATIONS: 300
-MUTATION_RATE: 0.5
-//Type of selection Tournament -> 1, Roulette -> 2
-TYPE_OF_SELECTION: 2
+POPULATION_SIZE: 100
+GENERATIONS: 100
+//Method of selection: Tournament -> 1, Roulette -> 2
+METHOD_OF_SELECTION: 2
+PROBABILITY_OF_CROSSOVER: 0.5
+//Method of mutation: swap -> 1, invert -> 2
+MUTATION_METHOD: 2
+MUTATION_RATE: 0.4
+// how much of best stays
+SUCCESION_RATE: 0.05
 
 
 Time limit in minutes

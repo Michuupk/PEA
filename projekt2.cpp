@@ -32,8 +32,11 @@ int cooling_model = 0;
 long double alpha = 0;
 long long populationSize = 0;
 long long generations = 0;
+int selectionMethod = 0;
+float crossoverChance = 0;
+int mutationMethod = 0;
 float mutationRate = 0;
-int selectionType = 0;
+float succesionRate = 0;
 int random_init = 0;
 
 long long maxTime = 30; // 30 minutes by default (minutes defined in program)
@@ -61,7 +64,7 @@ void loadSettings()
             string label;
             iss >> label >> selection;
         }
-        
+
         if (selection == 1) // for AS
         {
             if (myText.find("RANDOM_INIT") != string::npos)
@@ -69,7 +72,6 @@ void loadSettings()
                 istringstream iss(myText);
                 string label;
                 iss >> label >> random_init;
-                
             }
             if (myText.find("INIT_TEMP") != string::npos)
             {
@@ -118,6 +120,35 @@ void loadSettings()
                 iss >> label >> generations;
                 cout << "Generations: " << generations << endl;
             }
+            if (myText.find("METHOD_OF_SELECTION:") != string::npos)
+            {
+                istringstream iss(myText); // TODO:
+                string label;
+                iss >> label >> selectionMethod;
+                cout << "Method of selection: " << selectionMethod << endl;
+            }
+            if (myText.find("PROBABILITY_OF_CROSSOVER:") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> crossoverChance;
+                cout << "Probability of parents crossover " << crossoverChance << endl;
+            }
+            if (myText.find("MUTATION_METHOD") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> mutationMethod;
+                cout << "Mutation method: ";
+                if (mutationMethod == 1)
+                {
+                    cout << "Swap" << endl;
+                }
+                else if (mutationMethod == 2)
+                {
+                    cout << "Invert" << endl;
+                }
+            }
             if (myText.find("MUTATION_RATE") != string::npos)
             {
                 istringstream iss(myText);
@@ -125,12 +156,12 @@ void loadSettings()
                 iss >> label >> mutationRate;
                 cout << "Mutation rate: " << mutationRate << endl;
             }
-            if (myText.find("TYPE_OF_SELECTION:") != string::npos)
+            if (myText.find("SUCCESION_RATE") != string::npos)
             {
                 istringstream iss(myText);
                 string label;
-                iss >> label >> selectionType;
-                cout << "Selection Type: " << selectionType << endl;
+                iss >> label >> succesionRate;
+                cout << "Succesion rate: " << succesionRate << endl;
             }
         }
         if (myText.find("TIME_LIMIT") != string::npos)
@@ -277,7 +308,6 @@ long long calculateCost(vector<long long> path, vector<vector<long long>> graph)
     return cost;
 }
 
-
 void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath)
 {
     cout << "Nearest Neighbour" << endl;
@@ -339,7 +369,7 @@ void nearestNeighbour(vector<vector<long long>> &graph, long long &graphSize, lo
     }
 }
 
-void generateRandomPath(long long &cost, vector<long long>&bestpath, vector<vector<long long>> &graph, long long &graphSize)
+void generateRandomPath(long long &cost, vector<long long> &bestpath, vector<vector<long long>> &graph, long long &graphSize)
 {
     bestpath.reserve(graphSize);
     for (long long i = 0; i < graphSize; i++)
@@ -359,10 +389,10 @@ vector<long long> generateNeighbour(vector<long long> &path)
     vector<long long> newPath = path;
     long long first = rand() % path.size();
     long long second = rand() % path.size();
-    while(second == first || second == first + 1 || second == first - 1)
+    while (second == first || second == first + 1 || second == first - 1)
     {
         second = rand() % path.size();
-    } 
+    }
     swap(newPath[first], newPath[second]);
     return newPath;
 }
@@ -398,20 +428,20 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
                 cost = newcost;
             }
         }
-        switch(cooling_model)
+        switch (cooling_model)
         {
-            case 1: //linear
-                temp -= alpha;
-                cout << temp << endl;
-                break;
-            case 2: //geometric
-                temp = temp * alpha;
-                cout << temp << endl;
-                break;
-            case 3: //logarithmic
-                temp = inittemp / (1 + alpha * log(1 + (++counter))); 
-                cout << temp << endl;
-                break;
+        case 1: // linear
+            temp -= alpha;
+            cout << temp << endl;
+            break;
+        case 2: // geometric
+            temp = temp * alpha;
+            cout << temp << endl;
+            break;
+        case 3: // logarithmic
+            temp = inittemp / (1 + alpha * log(1 + (++counter)));
+            cout << temp << endl;
+            break;
         }
     }
 }
@@ -431,7 +461,7 @@ void generatePopulation(vector<vector<long long>> &population, long long &popula
     }
 }
 
-void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
+void createoffspring(vector<long long> &parent1, vector<long long> &parent2) // order crossover
 {
     int start = 0;
     int end = 0;
@@ -468,14 +498,14 @@ void createoffspring(vector<long long> &parent1, vector<long long> &parent2)
     insertion2.clear();
 }
 
-void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize, float &mutationRate)
+void swapmutateoffspring(vector<vector<long long>> &offspring, long long &graphSize, float &mutationRate)
 {
     for (int i = 0; i < offspring.size(); i++)
     {
         double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
         if (random < mutationRate)
         {
-            int first = rand() % offspring[i].size(); 
+            int first = rand() % offspring[i].size();
             if (first == offspring[i].size() - 1)
             {
                 first--;
@@ -484,12 +514,40 @@ void mutateoffspring(vector<vector<long long>> &offspring, long long &graphSize,
             if (second == offspring[i].size() - 1)
             {
                 second--;
-            }else
+            }
+            else
             {
-                while(second == first || second == first + 1 || second == first - 1)
-                second = rand() % offspring[i].size();
+                while (second == first || second == first + 1 || second == first - 1)
+                    second = rand() % offspring[i].size();
             }
             swap(offspring[i][first], offspring[i][second]);
+        }
+    }
+}
+
+void invertmutateoffspring(vector<vector<long long>> &offspring, long long &graphSize, float &mutationRate)
+{
+    for (int i = 0; i < offspring.size(); i++)
+    {
+        double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
+        if (random < mutationRate)
+        {
+            int first = rand() % offspring[i].size();
+            if (first == offspring[i].size() - 1)
+            {
+                first--;
+            }
+            int second = rand() % offspring[i].size();
+            if (second == offspring[i].size() - 1)
+            {
+                second--;
+            }
+            else
+            {
+                while (second == first || second == first + 1 || second == first - 1)
+                    second = rand() % offspring[i].size();
+            }
+            reverse(offspring[i].begin() + first, offspring[i].begin() + second);
         }
     }
 }
@@ -519,9 +577,9 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
 
         vector<vector<long long>> newPopulation;
         int midway = population.size() / 2;
-        if (selectionType == 1)
+        if (selectionMethod == 1) // tournament selection
         {
-            for (long long j = 0; j < midway; j++) // tournament selection
+            for (long long j = 0; j < midway; j++)
             {
                 if (fitness[j] == numeric_limits<long long>::max() && fitness[j + midway] == numeric_limits<long long>::max()) // if both paths are invalid
                 {
@@ -542,7 +600,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
                 }
             }
         }
-        else if (selectionType == 2) // roulette wheel selection
+        else if (selectionMethod == 2) // roulette wheel selection
         {
             long double sum = 0;
             long double probability = 0;
@@ -552,12 +610,9 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
             {
                 probability = fitness[i] / sum;
                 fitness[i] = probability;
-            }
-            for (long long i = 0; i < fitness.size(); i++)
-            {
-                if (i!=0)
+                if (i != 0)
                 {
-                    fitness[i] += fitness[i-1];
+                    fitness[i] += fitness[i - 1];
                 }
             }
             for (long long i = 0; i < midway; i++)
@@ -567,20 +622,30 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
                 {
                     if (random < fitness[j])
                     {
-                            newPopulation.push_back(population[j]);
-                            break;
+                        newPopulation.push_back(population[j]);
+                        break;
                     }
                 }
             }
         }
-        
+
         fitness.clear();
         population.swap(newPopulation); // survivors become new population
         newPopulation.clear();
         vector<long long> parent1;
-        vector<long long> parent2; // decyzje czy ci rodzice mogą się rozmnożyć
+        vector<long long> parent2;
         vector<vector<long long>> offspring;
-        while (offspring.size() < populationSize + 1) // creating offspring
+        vector<vector<long long>> elite;
+        offspring.reserve(populationSize);
+        if (succesionRate != 0) // elitisim is random
+        {
+            while (elite.size() < (float)populationSize * succesionRate) // creating offspring
+            {
+                long long random = rand() % (population.size());
+                elite.push_back(population[random]);
+            }
+        }
+        while (offspring.size() < populationSize + 1 - elite.size()) // creating offspring
         {
             long long random = rand() % (population.size());
             parent1 = population[random]; // random parent selection
@@ -591,17 +656,31 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
                 parent2 = population[random]; // random parent selection
                 stop++;
             } while (parent2 == parent1 && stop < 100);
-            createoffspring(parent1, parent2);
+            if (stop == 100)
+            {
+                break;
+            }
+            int parent1cost = calculateCost(parent1, graph);
+            int parent2cost = calculateCost(parent2, graph);
+            if ((abs(parent1cost - parent2cost) / max(parent1cost, parent2cost)) < crossoverChance) // proportional to fitness of parents
+            {
+                createoffspring(parent1, parent2);
+            }
+            else
+                continue;
 
             offspring.push_back(parent1);
             offspring.push_back(parent2);
             parent1.clear();
             parent2.clear();
         }
-        mutateoffspring(offspring, graphSize, mutationRate); // mutation
-        //sukcesje pokminić czy wszyscy, czy jakaś starszyzna?
+        if (mutationMethod == 1)
+            swapmutateoffspring(offspring, graphSize, mutationRate); // mutation
+        else if (mutationMethod == 2)
+            invertmutateoffspring(offspring, graphSize, mutationRate); // mutation
 
         population.swap(offspring);
+        population.insert(population.begin(), elite.begin(), elite.end());
         population.resize(populationSize);
 
         offspring.clear();
@@ -651,22 +730,21 @@ int main()
     cout << "Loaded graph has " << graphSize << " Nodes" << endl;
 
     LoadGraph(graph, graphAdjacency); // loading graph to memory
-    cout << "Graph loaded to memory" << endl;
+    // cout << "Graph loaded to memory" << endl;
 
-    long long cost = 0;
-    long long topLimit = 0;
-
-
-    if (random_init == 1 )
-    {
-        generateRandomPath(cost, bestpath, graph, graphSize);
-    }
-    else nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
+    long long cost = std::numeric_limits<long long>::max();
 
     chrono::time_point<std::chrono::high_resolution_clock> start_clock, end_clock; // variables for time measurement
 
     if (selection == 1)
     {
+        if (random_init == 1)
+        {
+            generateRandomPath(cost, bestpath, graph, graphSize);
+        }
+        else
+            nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
+
         start_clock = chrono::high_resolution_clock::now();
         SimulatedAnnealing(graph, graphSize, cost, bestpath, inittemp, endtemp, alpha);
         end_clock = chrono::high_resolution_clock::now();
