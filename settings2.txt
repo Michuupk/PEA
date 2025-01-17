@@ -1,5 +1,5 @@
 Name of file
-NAME_OF: 10.atsp
+NAME_OF: br17.atsp
 
 BEST_KNOWN:
 
@@ -11,24 +11,26 @@ SELECTION: 2
 RANDOM_INIT: 1
 INIT_TEMP: 10
 MIN_TEMP: 1
-EPOCH_NUMBER: 100  // uzależnić od wielkości instancji lub sąsiedztwa(cokolwiek to znaczy)
+EPOCH_NUMBER: 100 
 //Cooling model: 1 -> linear; 2 -> Geometric; 3 -> Logarithmic
 COOLING_MODEL: 3;
 ALPHA: 0.95  
 
+Time limit in minutes for SA
+TIME_LIMIT: 15
+
 
 #Genetic Algorithm Settings
-POPULATION_SIZE: 100
-GENERATIONS: 100
+POPULATION_SIZE: 1000
+GENERATIONS: 1000
 //Method of selection: Tournament -> 1, Roulette -> 2
-METHOD_OF_SELECTION: 2
-PROBABILITY_OF_CROSSOVER: 0.5
+METHOD_OF_SELECTION: 1
+PROBABILITY_OF_CROSSOVER: 0.7
 //Method of mutation: swap -> 1, invert -> 2
 MUTATION_METHOD: 2
 MUTATION_RATE: 0.4
-// how much of best stays
+// how much stays
 SUCCESION_RATE: 0.05
 
-
-Time limit in minutes
-TIME_LIMIT: 30
+Time limit in minutes for GA
+TIME_LIMIT: 15

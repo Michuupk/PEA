@@ -24,7 +24,7 @@ vector<long long> bestpath;
 
 // Settings variables
 int selection = 0; // 1 - Simulated Annealing, 2 - Genetic Algorithm
-long long bestKnown = -1;
+long double bestKnown = -1;
 long double inittemp = 0;
 long double endtemp = 0;
 int epoch = 0;
@@ -103,6 +103,12 @@ void loadSettings()
                 string label;
                 iss >> label >> alpha;
             }
+            if (myText.find("TIME_LIMIT") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> maxTime;
+            }
         }
         else if (selection == 2) // for Genetic Algorithm
         {
@@ -122,10 +128,14 @@ void loadSettings()
             }
             if (myText.find("METHOD_OF_SELECTION:") != string::npos)
             {
-                istringstream iss(myText); // TODO:
+                istringstream iss(myText);
                 string label;
                 iss >> label >> selectionMethod;
-                cout << "Method of selection: " << selectionMethod << endl;
+                cout << "Method of selection: ";
+                if (selectionMethod == 1)
+                    cout << "Tournament" << endl;
+                else if (selectionMethod == 2)
+                    cout << "Roulette wheel" << endl;
             }
             if (myText.find("PROBABILITY_OF_CROSSOVER:") != string::npos)
             {
@@ -163,13 +173,12 @@ void loadSettings()
                 iss >> label >> succesionRate;
                 cout << "Succesion rate: " << succesionRate << endl;
             }
-        }
-        if (myText.find("TIME_LIMIT") != string::npos)
-        {
-            istringstream iss(myText);
-            string label;
-            iss >> label >> maxTime;
-            break;
+            if (myText.find("TIME_LIMIT") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> maxTime;
+            }
         }
     }
     settingsFile.close();
@@ -193,9 +202,7 @@ void LoadData(long long &graphSize) // Checking the size of graph
             string label;
 
             iss >> label >> graphSize;
-            // cout<< label<<endl;
             // cout << graphSize<<endl;
-            // graphFile.close();
         }
 
         if (myText.find("BEST_KNOWN") != string::npos)
@@ -232,6 +239,8 @@ void LoadGraph(vector<vector<long long>> &graph, vector<vector<long long>> &grap
                 {
                     long long value;
                     graphFile >> value;
+                    if (value <= 0)
+                    value = -1;
                     row.push_back(value);
                 }
                 graph.push_back(row);
@@ -419,7 +428,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
             {
                 newpath = generateNeighbour(bestpath);
                 newcost = calculateCost(newpath, graph);
-            } while (newcost == numeric_limits<long long>::max());
+            } while (newcost == numeric_limits<long long>::max() || newcost <=0);
             long long delta = newcost - cost;
             double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
             if (delta < 0 || random < exp(-delta / temp))
@@ -684,11 +693,12 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         population.resize(populationSize);
 
         offspring.clear();
+        elite.clear();
 
         for (auto path : population)
         {
             pathCost = calculateCost(path, graph);
-            if (pathCost < cost)
+            if (pathCost < cost && pathCost > 0)
             {
                 cost = pathCost;
                 bestpath = path;
@@ -753,11 +763,19 @@ int main()
         if (cost != numeric_limits<long long>::max())
         {
             cout << "Lowest cost: " << cost << endl;
-            if (bestpath.size() < 20)
+            if (bestpath.size() <= 16)
             {
                 cout << "Best path: ";
                 printPath(bestpath);
             }
+            if (bestKnown > 0)
+            {
+                float relative_error = abs(cost-bestKnown);
+                float absolute_error = relative_error/bestKnown;
+                cout<<"Błąd względny: "<<relative_error<<" ("<<relative_error/100<<"%)"<<endl;
+                cout<<"Błąd bezwzględny: "<<absolute_error<<" ("<<absolute_error/100<<"%)"<<endl;
+            }
+
         }
         else
         {
@@ -774,10 +792,17 @@ int main()
         if (cost != numeric_limits<long long>::max())
         {
             cout << "Lowest cost: " << cost << endl;
-            if (bestpath.size() < 20)
+            if (bestpath.size() <= 16)
             {
                 cout << "Best path: ";
                 printPath(bestpath);
+            }
+            if (bestKnown > 0)
+            {
+                float relative_error = abs(cost-bestKnown);
+                float absolute_error = relative_error/bestKnown;
+                cout<<"Relative error: "<<relative_error<<" ("<<relative_error/100<<"%)"<<endl;
+                cout<<"Absolute error: "<<absolute_error<<" ("<<absolute_error/100<<"%)"<<endl;
             }
         }
         else
