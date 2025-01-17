@@ -299,6 +299,30 @@ void printPath(const vector<long long> path)
     cout << endl;
 }
 
+void validPath(vector<long long> path) // function checking if every city is visited only once
+{
+    if (path.size() != graphSize)
+    {
+        cout << endl
+             << "Path is invalid" << endl;
+        return;
+    }
+    for (int i = 0; i < path.size(); i++)
+    {
+        for (int j = i + 1; j < path.size(); j++)
+        {
+            if (path[i] == path[j])
+            {
+                cout << endl
+                     << "Path is invalid" << endl;
+                return;
+            }
+        }
+    }
+    cout << endl
+         << "Path is valid" << endl;
+}
+
 long long calculateCost(vector<long long> path, vector<vector<long long>> graph)
 {
     long long cost = 0;
@@ -393,7 +417,7 @@ void generateRandomPath(long long &cost, vector<long long> &bestpath, vector<vec
     cost = calculateCost(bestpath, graph);
 }
 
-vector<long long> generateNeighbour(vector<long long> &path)
+vector<long long> generateNeighbourSwap(vector<long long> &path)  // normal swap, look for 2opt
 {
     vector<long long> newPath = path;
     long long first = rand() % path.size();
@@ -405,6 +429,41 @@ vector<long long> generateNeighbour(vector<long long> &path)
     swap(newPath[first], newPath[second]);
     return newPath;
 }
+
+vector<long long> generateNeighbour2opt(vector<long long> &path, vector<vector<long long>> &graph)  // normal swap, look for 2opt
+{
+    vector<long long> newPath = path;
+    long long first = rand() % path.size();
+    long long second = rand() % path.size();
+    while (second == first || second == first + 1 || second == first - 1)
+    {
+        second = rand() % path.size();
+    }
+    
+    return newPath;
+}
+
+// vector<long long> generateNeighbour3opt(vector<long long> &path, vector<vector<long long>> &graph)  // normal swap, look for 2opt
+// {
+//     vector<long long> newPath = path;
+//     long long first = rand() % path.size();
+//     long long second = rand() % path.size();
+//     while (second == first || second == first + 1 || second == first - 1)
+//     {
+//         second = rand() % path.size();
+//     }
+//     first
+//     second + 1
+    
+//     second
+//     third + 1
+    
+//     third
+//     first+1
+//     newPath[first + 1] = path[second]
+//     return newPath;
+// }
+
 
 void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long double inittemp, long double &endtemp, long double &alpha)
 {
@@ -426,7 +485,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         {
             do
             {
-                newpath = generateNeighbour(bestpath);
+                newpath = generateNeighbourSwap(bestpath);
                 newcost = calculateCost(newpath, graph);
             } while (newcost == numeric_limits<long long>::max() || newcost <=0);
             long long delta = newcost - cost;
@@ -646,7 +705,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         vector<vector<long long>> offspring;
         vector<vector<long long>> elite;
         offspring.reserve(populationSize);
-        if (succesionRate != 0) // elitisim is random
+        if (succesionRate != 0) // elitisim is random //should be best TODO:
         {
             while (elite.size() < (float)populationSize * succesionRate) // creating offspring
             {
@@ -671,7 +730,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
             }
             int parent1cost = calculateCost(parent1, graph);
             int parent2cost = calculateCost(parent2, graph);
-            if ((abs(parent1cost - parent2cost) / max(parent1cost, parent2cost)) < crossoverChance) // proportional to fitness of parents
+            if ((abs(parent1cost - parent2cost) / max(parent1cost, parent2cost)) < crossoverChance) // proportional to fitness of parents losowo i tyle TODO:
             {
                 createoffspring(parent1, parent2);
             }
@@ -707,29 +766,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
     }
 }
 
-void validPath(vector<long long> path) // function checking if every city is visited only once
-{
-    if (path.size() != graphSize)
-    {
-        cout << endl
-             << "Path is invalid" << endl;
-        return;
-    }
-    for (int i = 0; i < path.size(); i++)
-    {
-        for (int j = i + 1; j < path.size(); j++)
-        {
-            if (path[i] == path[j])
-            {
-                cout << endl
-                     << "Path is invalid" << endl;
-                return;
-            }
-        }
-    }
-    cout << endl
-         << "Path is valid" << endl;
-}
+
 
 int main()
 {
