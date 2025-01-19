@@ -72,36 +72,51 @@ void loadSettings()
                 istringstream iss(myText);
                 string label;
                 iss >> label >> random_init;
+                if (random_init == 1)
+                {
+                    cout << "Random initial solution " << endl;
+                }
             }
             if (myText.find("INIT_TEMP") != string::npos)
             {
                 istringstream iss(myText);
                 string label;
                 iss >> label >> inittemp;
+                cout << "Initial temperature: " << inittemp << endl;
             }
             if (myText.find("MIN_TEMP") != string::npos)
             {
                 istringstream iss(myText);
                 string label;
                 iss >> label >> endtemp;
+                cout << "End temperature: " << endtemp << endl;
             }
             if (myText.find("EPOCH_NUMBER") != string::npos)
             {
                 istringstream iss(myText);
                 string label;
                 iss >> label >> epoch;
+                cout << "Number of Epochs: " << epoch << endl;
             }
             if (myText.find("COOLING_MODEL") != string::npos)
             {
                 istringstream iss(myText);
                 string label;
                 iss >> label >> cooling_model;
+                cout << "Cooling model: ";
+                if (cooling_model == 1)
+                    cout << "Linear" << endl;
+                else if (cooling_model == 2)
+                    cout << "Geometric" << endl;
+                else if (cooling_model == 3)
+                    cout << "Logarithmic" << endl;
             }
             if (myText.find("ALPHA") != string::npos)
             {
                 istringstream iss(myText);
                 string label;
                 iss >> label >> alpha;
+                cout << "Alpha: " << alpha << endl;
             }
             if (myText.find("TIME_LIMIT") != string::npos)
             {
@@ -430,7 +445,7 @@ vector<long long> generateNeighbourSwap(vector<long long> &path)  // normal swap
     return newPath;
 }
 
-vector<long long> generateNeighbour2opt(vector<long long> &path, vector<vector<long long>> &graph)  // normal swap, look for 2opt
+vector<long long> generateNeighbour2opt(vector<long long> &path)  // normal swap, look for 2opt
 {
     vector<long long> newPath = path;
     long long first = rand() % path.size();
@@ -440,6 +455,12 @@ vector<long long> generateNeighbour2opt(vector<long long> &path, vector<vector<l
         second = rand() % path.size();
     }
     
+    if (first > second)
+    {
+        swap(first, second);
+    }
+    reverse(newPath.begin() + (first+1), newPath.begin() + (second+1));
+
     return newPath;
 }
 
@@ -452,15 +473,6 @@ vector<long long> generateNeighbour2opt(vector<long long> &path, vector<vector<l
 //     {
 //         second = rand() % path.size();
 //     }
-//     first
-//     second + 1
-    
-//     second
-//     third + 1
-    
-//     third
-//     first+1
-//     newPath[first + 1] = path[second]
 //     return newPath;
 // }
 
@@ -472,7 +484,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
     auto startTimer = chrono::high_resolution_clock::now();
     int counter = 0;
     long double temp = inittemp;
-    while (temp > endtemp) // liczba iteracji bez powtórzeń dodać
+    while (temp > endtemp)
     {
         if (chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now() - startTimer).count() > maxTime * 60)
         {
@@ -485,7 +497,7 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         {
             do
             {
-                newpath = generateNeighbourSwap(bestpath);
+                newpath = generateNeighbour2opt(bestpath);
                 newcost = calculateCost(newpath, graph);
             } while (newcost == numeric_limits<long long>::max() || newcost <=0);
             long long delta = newcost - cost;
@@ -500,15 +512,12 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         {
         case 1: // linear
             temp -= alpha;
-            cout << temp << endl;
             break;
         case 2: // geometric
             temp = temp * alpha;
-            cout << temp << endl;
             break;
         case 3: // logarithmic
             temp = inittemp / (1 + alpha * log(1 + (++counter)));
-            cout << temp << endl;
             break;
         }
     }
@@ -705,13 +714,24 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
         vector<vector<long long>> offspring;
         vector<vector<long long>> elite;
         offspring.reserve(populationSize);
-        if (succesionRate != 0) // elitisim is random //should be best TODO:
+        if (succesionRate != 0) // elitisim is top %
         {
+            for (auto path : population)
+            {
+                pathCost = calculateCost(path, graph);
+                fitness.push_back(pathCost);
+            }
+
+            vector<size_t> indices(fitness.size());
+            iota(indices.begin(), indices.end(), 0);
+            sort(indices.begin(), indices.end(), [&fitness](size_t a, size_t b) { return fitness[a] < fitness[b]; });
+
+            int i = 0;
             while (elite.size() < (float)populationSize * succesionRate) // creating offspring
             {
-                long long random = rand() % (population.size());
-                elite.push_back(population[random]);
+                elite.push_back(population[indices[i++]]);
             }
+            indices.clear();     
         }
         while (offspring.size() < populationSize + 1 - elite.size()) // creating offspring
         {
@@ -730,7 +750,8 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
             }
             int parent1cost = calculateCost(parent1, graph);
             int parent2cost = calculateCost(parent2, graph);
-            if ((abs(parent1cost - parent2cost) / max(parent1cost, parent2cost)) < crossoverChance) // proportional to fitness of parents losowo i tyle TODO:
+            random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
+            if ( random < crossoverChance) // random chance for offspring creation
             {
                 createoffspring(parent1, parent2);
             }
@@ -809,8 +830,8 @@ int main()
             {
                 float relative_error = abs(cost-bestKnown);
                 float absolute_error = relative_error/bestKnown;
-                cout<<"Błąd względny: "<<relative_error<<" ("<<relative_error/100<<"%)"<<endl;
-                cout<<"Błąd bezwzględny: "<<absolute_error<<" ("<<absolute_error/100<<"%)"<<endl;
+                cout<<"Relative error: "<<relative_error<<" ("<<relative_error/100<<"%)"<<endl;
+                cout<<"Absolute error: "<<absolute_error<<" ("<<absolute_error/100<<"%)"<<endl;
             }
 
         }
