@@ -1,5 +1,5 @@
 Name of file
-NAME_OF: 10.atsp
+NAME_OF: mp6.atsp
 
 BEST_KNOWN:
 
@@ -8,26 +8,29 @@ SELECTION: 1
 
 #SimmulatedAnnealing Settings
 //Default init path = NN, write 1 for random
-RANDOM_INIT: 1
-INIT_TEMP: 10
+RANDOM_INIT: 
+INIT_TEMP: 100
 MIN_TEMP: 1
-EPOCH_NUMBER: 100 //n^2, 1/2n^2, 1/10n^2
-//Cooling model: 1 -> linear; 2 -> Geometric; 3 -> Logarithmic
-COOLING_MODEL: 3;
-ALPHA: 0.95  
+//Preset epoch sizes: A -> N^2; B -> (N)/2; C -> (N^2)/10; Any number is taken as a number of iterations
+EPOCH_NUMBER: A
+//Method of generating neighbour: 1 -> Swap; 2 -> 2opt;
+NEIHGBOUR_METHOD: 1
+//Cooling model: 1 -> linear; 2 -> Logarithmic; 3 -> Geometric
+COOLING_MODEL: 3
+ALPHA: 0.95
 
 Time limit in minutes for SA
 TIME_LIMIT: 15
 
 
 #Genetic Algorithm Settings
-POPULATION_SIZE: 100
-GENERATIONS: 500
+POPULATION_SIZE: 400
+GENERATIONS: 200
 //Method of selection: Tournament -> 1, Roulette -> 2 // wszystkie na turnieju, kilka na ruletce
 METHOD_OF_SELECTION: 1
-PROBABILITY_OF_CROSSOVER: 0.5
+PROBABILITY_OF_CROSSOVER: 0.7
 //Method of mutation: swap -> 1, invert -> 2
-MUTATION_METHOD: 2
+MUTATION_METHOD: 1
 MUTATION_RATE: 0.3
 // how much stays
 SUCCESION_RATE: 0.1

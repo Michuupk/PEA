@@ -28,7 +28,9 @@ long double bestKnown = -1;
 long double inittemp = 0;
 long double endtemp = 0;
 int epoch = 0;
+char epochcheck;
 int cooling_model = 0;
+int neighbour_method = 0;
 long double alpha = 0;
 long long populationSize = 0;
 long long generations = 0;
@@ -39,7 +41,7 @@ float mutationRate = 0;
 float succesionRate = 0;
 int random_init = 0;
 
-long long maxTime = 30; // 30 minutes by default (minutes defined in program)
+long long maxTime = 15;
 
 void loadSettings()
 {
@@ -95,8 +97,35 @@ void loadSettings()
             {
                 istringstream iss(myText);
                 string label;
-                iss >> label >> epoch;
-                cout << "Number of Epochs: " << epoch << endl;
+                iss >> label >> epochcheck;
+                if (epochcheck == 'A')
+                {
+                    cout << "Epoch: N^2" << endl;
+                }
+                else if (epochcheck == 'B')
+                {
+                    cout << "Epoch: (N^2)/2" << endl;
+                }
+                else if (epochcheck == 'C')
+                {
+                    cout << "Epoch: (N^2)/10" << endl;
+                }
+                else
+                {
+                    epoch = epochcheck - '0';
+                    cout << "Number of Epochs: " << epoch << endl;
+                }
+            }
+            if (myText.find("NEIHGBOUR_METHOD") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> neighbour_method;
+                cout << "Neighbour method: ";
+                if (neighbour_method == 1)
+                    cout << "Swap" << endl;
+                else if (neighbour_method == 2)
+                    cout << "2opt" << endl;
             }
             if (myText.find("COOLING_MODEL") != string::npos)
             {
@@ -107,9 +136,187 @@ void loadSettings()
                 if (cooling_model == 1)
                     cout << "Linear" << endl;
                 else if (cooling_model == 2)
-                    cout << "Geometric" << endl;
-                else if (cooling_model == 3)
                     cout << "Logarithmic" << endl;
+                else if (cooling_model == 3)
+                    cout << "Geometric" << endl;
+            }
+            if (myText.find("ALPHA") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> alpha;
+                cout << "Alpha: " << alpha << endl;
+            }
+            if (myText.find("TIME_LIMIT") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> maxTime;
+            }
+        }
+        else if (selection == 2) // for Genetic Algorithm
+        {
+            if (myText.find("POPULATION_SIZE") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> populationSize;
+                cout << "Population size: " << populationSize << endl;
+            }
+            if (myText.find("GENERATIONS") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> generations;
+                cout << "Generations: " << generations << endl;
+            }
+            if (myText.find("METHOD_OF_SELECTION:") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> selectionMethod;
+                cout << "Method of selection: ";
+                if (selectionMethod == 1)
+                    cout << "Tournament" << endl;
+                else if (selectionMethod == 2)
+                    cout << "Roulette wheel" << endl;
+            }
+            if (myText.find("PROBABILITY_OF_CROSSOVER:") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> crossoverChance;
+                cout << "Probability of parents crossover " << crossoverChance << endl;
+            }
+            if (myText.find("MUTATION_METHOD") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> mutationMethod;
+                cout << "Mutation method: ";
+                if (mutationMethod == 1)
+                {
+                    cout << "Swap" << endl;
+                }
+                else if (mutationMethod == 2)
+                {
+                    cout << "Invert" << endl;
+                }
+            }
+            if (myText.find("MUTATION_RATE") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> mutationRate;
+                cout << "Mutation rate: " << mutationRate << endl;
+            }
+            if (myText.find("SUCCESION_RATE") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> succesionRate;
+                cout << "Succesion rate: " << succesionRate << endl;
+            }
+            if (myText.find("TIME_LIMIT") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> maxTime;
+            }
+        }
+    }
+    settingsFile.close();
+}
+void testloadSettings()
+{
+    ifstream settingsFile("settings2.txt");
+    if (!settingsFile.is_open())
+    {
+        cerr << "Error: Could not open the file!" << endl;
+        return;
+    }
+
+    while (getline(settingsFile, myText))
+    {
+        if (myText.find("SELECTION") != string::npos && selection == 0)
+        {
+            istringstream iss(myText);
+            string label;
+            iss >> label >> selection;
+        }
+
+        if (selection == 1) // for SA
+        {
+            if (myText.find("RANDOM_INIT") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> random_init;
+                if (random_init == 1)
+                {
+                    cout << "Random initial solution " << endl;
+                }
+            }
+            if (myText.find("INIT_TEMP") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> inittemp;
+                cout << "Initial temperature: " << inittemp << endl;
+            }
+            if (myText.find("MIN_TEMP") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> endtemp;
+                cout << "End temperature: " << endtemp << endl;
+            }
+            if (myText.find("EPOCH_NUMBER") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> epochcheck;
+                if (epochcheck == 'A')
+                {
+                    cout << "Epoch: N^2" << endl;
+                }
+                else if (epochcheck == 'B')
+                {
+                    cout << "Epoch: (N^2)/2" << endl;
+                }
+                else if (epochcheck == 'C')
+                {
+                    cout << "Epoch: (N^2)/10" << endl;
+                }
+                else
+                {
+                    epoch = epochcheck - '0';
+                    cout << "Number of Epochs: " << epoch << endl;
+                }
+            }
+            if (myText.find("NEIHGBOUR_METHOD") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> neighbour_method;
+                cout << "Neighbour method: ";
+                if (neighbour_method == 1)
+                    cout << "Swap" << endl;
+                else if (neighbour_method == 2)
+                    cout << "2opt" << endl;
+            }
+            if (myText.find("COOLING_MODEL") != string::npos)
+            {
+                istringstream iss(myText);
+                string label;
+                iss >> label >> cooling_model;
+                cout << "Cooling model: ";
+                if (cooling_model == 1)
+                    cout << "Linear" << endl;
+                else if (cooling_model == 2)
+                    cout << "Logarithmic" << endl;
+                else if (cooling_model == 3)
+                    cout << "Geometric" << endl;
             }
             if (myText.find("ALPHA") != string::npos)
             {
@@ -255,7 +462,7 @@ void LoadGraph(vector<vector<long long>> &graph, vector<vector<long long>> &grap
                     long long value;
                     graphFile >> value;
                     if (value <= 0)
-                    value = -1;
+                        value = -1;
                     row.push_back(value);
                 }
                 graph.push_back(row);
@@ -314,13 +521,11 @@ void printPath(const vector<long long> path)
     cout << endl;
 }
 
-void validPath(vector<long long> path) // function checking if every city is visited only once
+bool validPath(vector<long long> path) // function checking if every city is visited only once
 {
     if (path.size() != graphSize)
     {
-        cout << endl
-             << "Path is invalid" << endl;
-        return;
+        return false;
     }
     for (int i = 0; i < path.size(); i++)
     {
@@ -328,14 +533,11 @@ void validPath(vector<long long> path) // function checking if every city is vis
         {
             if (path[i] == path[j])
             {
-                cout << endl
-                     << "Path is invalid" << endl;
-                return;
+                return false;
             }
         }
     }
-    cout << endl
-         << "Path is valid" << endl;
+    return true;
 }
 
 long long calculateCost(vector<long long> path, vector<vector<long long>> graph)
@@ -432,7 +634,7 @@ void generateRandomPath(long long &cost, vector<long long> &bestpath, vector<vec
     cost = calculateCost(bestpath, graph);
 }
 
-vector<long long> generateNeighbourSwap(vector<long long> &path)  // normal swap, look for 2opt
+vector<long long> generateNeighbourSwap(vector<long long> &path) // normal swap, look for 2opt
 {
     vector<long long> newPath = path;
     long long first = rand() % path.size();
@@ -445,7 +647,7 @@ vector<long long> generateNeighbourSwap(vector<long long> &path)  // normal swap
     return newPath;
 }
 
-vector<long long> generateNeighbour2opt(vector<long long> &path)  // normal swap, look for 2opt
+vector<long long> generateNeighbour2opt(vector<long long> &path) // normal swap, look for 2opt
 {
     vector<long long> newPath = path;
     long long first = rand() % path.size();
@@ -454,28 +656,15 @@ vector<long long> generateNeighbour2opt(vector<long long> &path)  // normal swap
     {
         second = rand() % path.size();
     }
-    
+
     if (first > second)
     {
         swap(first, second);
     }
-    reverse(newPath.begin() + (first+1), newPath.begin() + (second+1));
+    reverse(newPath.begin() + (first + 1), newPath.begin() + (second + 1));
 
     return newPath;
 }
-
-// vector<long long> generateNeighbour3opt(vector<long long> &path, vector<vector<long long>> &graph)  // normal swap, look for 2opt
-// {
-//     vector<long long> newPath = path;
-//     long long first = rand() % path.size();
-//     long long second = rand() % path.size();
-//     while (second == first || second == first + 1 || second == first - 1)
-//     {
-//         second = rand() % path.size();
-//     }
-//     return newPath;
-// }
-
 
 void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, long long &cost, vector<long long> &bestpath, long double inittemp, long double &endtemp, long double &alpha)
 {
@@ -495,29 +684,60 @@ void SimulatedAnnealing(vector<vector<long long>> &graph, long long &graphSize, 
         long long newcost = 0;
         for (int i = epoch; i > 0; i--)
         {
-            do
+            int brakecheck = 0;
+            int stop = 0;
+            if (neighbour_method == 1)
             {
-                newpath = generateNeighbour2opt(bestpath);
-                newcost = calculateCost(newpath, graph);
-            } while (newcost == numeric_limits<long long>::max() || newcost <=0);
+                do
+                {
+                    newpath = generateNeighbourSwap(bestpath);
+                    newcost = calculateCost(newpath, graph);
+                    stop++;
+                    if (stop > 100)
+                    {
+                        break;
+                    }
+                } while (newcost == numeric_limits<long long>::max() || newcost <= 0);
+            }
+            else if (neighbour_method == 2)
+            {
+                do
+                {
+                    newpath = generateNeighbour2opt(bestpath);
+                    newcost = calculateCost(newpath, graph);
+                    stop++;
+                    if (stop > 100)
+                    {
+                        break;
+                    }
+                } while (newcost == numeric_limits<long long>::max() || newcost <= 0);
+            }
             long long delta = newcost - cost;
             double random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
             if (delta < 0 || random < exp(-delta / temp))
             {
                 bestpath = newpath;
                 cost = newcost;
+            }else if (delta >= 0)
+            {
+                brakecheck++;
+                if (brakecheck == 70)
+                {
+                    break;
+                }
             }
         }
+        
         switch (cooling_model)
         {
         case 1: // linear
             temp -= alpha;
             break;
-        case 2: // geometric
-            temp = temp * alpha;
-            break;
-        case 3: // logarithmic
+        case 2: // logarithmic
             temp = inittemp / (1 + alpha * log(1 + (++counter)));
+            break;
+        case 3: // geometric
+            temp = temp * alpha;
             break;
         }
     }
@@ -624,6 +844,10 @@ void invertmutateoffspring(vector<vector<long long>> &offspring, long long &grap
                 while (second == first || second == first + 1 || second == first - 1)
                     second = rand() % offspring[i].size();
             }
+            if (first > second)
+            {
+                swap(first, second);
+            }
             reverse(offspring[i].begin() + first, offspring[i].begin() + second);
         }
     }
@@ -724,14 +948,15 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
 
             vector<size_t> indices(fitness.size());
             iota(indices.begin(), indices.end(), 0);
-            sort(indices.begin(), indices.end(), [&fitness](size_t a, size_t b) { return fitness[a] < fitness[b]; });
+            sort(indices.begin(), indices.end(), [&fitness](size_t a, size_t b)
+                 { return fitness[a] < fitness[b]; });
 
             int i = 0;
             while (elite.size() < (float)populationSize * succesionRate) // creating offspring
             {
                 elite.push_back(population[indices[i++]]);
             }
-            indices.clear();     
+            indices.clear();
         }
         while (offspring.size() < populationSize + 1 - elite.size()) // creating offspring
         {
@@ -751,7 +976,7 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
             int parent1cost = calculateCost(parent1, graph);
             int parent2cost = calculateCost(parent2, graph);
             random = ((double)rand() / (RAND_MAX)); // random number between 0 and 1
-            if ( random < crossoverChance) // random chance for offspring creation
+            if (random < crossoverChance)           // random chance for offspring creation
             {
                 createoffspring(parent1, parent2);
             }
@@ -787,7 +1012,149 @@ void GeneticAlgorithm(vector<vector<long long>> &graph, long long &graphSize, lo
     }
 }
 
+void TestingMode()
+{
+    long long cost = std::numeric_limits<long long>::max();
 
+    chrono::time_point<std::chrono::high_resolution_clock> start_clock, end_clock; // variables for time measurement
+    chrono::duration<double> result;
+
+    float relative_error;
+    float absolute_error;
+
+    int test = 0;
+
+    ofstream fileSA("resultsSA.txt", ios::app);
+    ofstream fileGA("resultsGA.txt", ios::app);
+
+    while (test <= 24)
+    {
+        if (selection == 1)
+        {
+            if (random_init == 1)
+            {
+                generateRandomPath(cost, bestpath, graph, graphSize);
+            }
+            else
+                nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
+
+            if (epochcheck == 'A')
+            {
+                epoch = graphSize * graphSize;
+            }
+            else if (epochcheck == 'B')
+            {
+                epoch = graphSize / 2;
+            }
+            else if (epochcheck == 'C')
+            {
+                epoch = (graphSize * graphSize) / 10;
+            }
+            //cout << "Number of Epochs: " << epoch << endl;
+
+            start_clock = chrono::high_resolution_clock::now();
+            SimulatedAnnealing(graph, graphSize, cost, bestpath, inittemp, endtemp, alpha);
+            end_clock = chrono::high_resolution_clock::now();
+            result = end_clock - start_clock;
+            cout << "Time of execution: " << result.count() << "s" << endl;
+            if (cost != numeric_limits<long long>::max())
+            {
+                cout << "Lowest cost: " << cost << endl;
+                // if (bestpath.size() <= 16)
+                // {
+                //     cout << "Best path: ";
+                //     printPath(bestpath);
+                // }
+                if (bestKnown > 0)
+                {
+                    relative_error = abs(cost - bestKnown);
+                    absolute_error = relative_error / bestKnown;
+
+                }
+            }
+            else
+            {
+                cout << "No path found" << endl;
+            }
+            fileSA << filename << ";" << "SA;" << random_init << ";" << inittemp << ";" << endtemp << ";" << epoch << ";" << neighbour_method << ";" 
+            << cooling_model << ";" << alpha << ";" << cost << ";" << result.count() << ";" << relative_error << ";" << relative_error / 100 << "%;" 
+            << absolute_error << ";" << absolute_error / 100 << "%;" << maxTime * 60 << endl;
+ 
+        }
+        if (selection == 2)
+        {
+            start_clock = chrono::high_resolution_clock::now();
+            GeneticAlgorithm(graph, graphSize, cost, bestpath, populationSize, generations, mutationRate);
+            end_clock = chrono::high_resolution_clock::now();
+            result = end_clock - start_clock;
+            cout << "Time of execution: " << result.count() << "s" << endl;
+            if (cost != numeric_limits<long long>::max())
+            {
+                cout << "Lowest cost: " << cost << endl;
+                // if (bestpath.size() <= 16)
+                // {
+                //     cout << "Best path: ";
+                //     printPath(bestpath);
+                // }
+                if (bestKnown > 0)
+                {
+                    relative_error = abs(cost - bestKnown);
+                    absolute_error = relative_error / bestKnown;
+                }
+            }
+            else
+            {
+                cout << "No path found" << endl;
+            }
+            fileGA << filename << ";" << "GA;" << populationSize << ";" << generations << ";" << selectionMethod << ";" << crossoverChance << ";" 
+            << mutationMethod << ";" << mutationRate << ";" << succesionRate << ";" << cost << ";" << result.count() << ";" << relative_error << ";" 
+            << relative_error / 100 << "%" << ";" << absolute_error << ";" << absolute_error / 100 << "%';" << maxTime * 60 << endl;
+        
+        }
+
+        if (validPath(bestpath)) // checking if path is valid
+        {
+            cout << "Path is valid" << endl;
+        }
+        else
+        {
+            cout << "Path is invalid" << endl;
+        }
+        
+        bestpath.clear();
+        cost = std::numeric_limits<long long>::max();
+        if (test == 24 && filename != "m10.atsp")
+        {
+                        
+                test = 0;
+                if (filename == "mp6.atsp")
+                {
+                    filename = "mp7.atsp";
+                }else if (filename == "mp7.atsp")
+                {
+                    filename = "mp8.atsp";
+                }else if (filename == "mp8.atsp")
+                {
+                    filename = "mp9.atsp";
+                }else if (filename == "mp9.atsp")
+                {
+                    filename = "m10.atsp";
+                }
+                graph.clear();
+                graphAdjacency.clear();
+                graphSize = 0;
+                testloadSettings();
+                LoadData(graphSize);
+                LoadGraph(graph, graphAdjacency);
+                test--;
+                fileSA << endl; 
+        }
+        test++;
+    }
+    fileSA << endl; 
+
+    
+}
 
 int main()
 {
@@ -799,6 +1166,13 @@ int main()
 
     LoadGraph(graph, graphAdjacency); // loading graph to memory
     // cout << "Graph loaded to memory" << endl;
+
+    int a = 10;
+    if (a == 10) // Testing mode
+    {
+        TestingMode();
+        return 0;
+    }
 
     long long cost = std::numeric_limits<long long>::max();
 
@@ -812,6 +1186,20 @@ int main()
         }
         else
             nearestNeighbour(graph, graphSize, cost, bestpath); // calling nearest neighbour method for top limit
+
+        if (epochcheck == 'A')
+        {
+            epoch = graphSize * graphSize;
+        }
+        else if (epochcheck == 'B')
+        {
+            epoch = (graphSize * graphSize) / 2;
+        }
+        else if (epochcheck == 'C')
+        {
+            epoch = (graphSize * graphSize) / 10;
+        }
+        cout << "Number of Epochs: " << epoch << endl;
 
         start_clock = chrono::high_resolution_clock::now();
         SimulatedAnnealing(graph, graphSize, cost, bestpath, inittemp, endtemp, alpha);
@@ -828,12 +1216,11 @@ int main()
             }
             if (bestKnown > 0)
             {
-                float relative_error = abs(cost-bestKnown);
-                float absolute_error = relative_error/bestKnown;
-                cout<<"Relative error: "<<relative_error<<" ("<<relative_error/100<<"%)"<<endl;
-                cout<<"Absolute error: "<<absolute_error<<" ("<<absolute_error/100<<"%)"<<endl;
+                float relative_error = abs(cost - bestKnown);
+                float absolute_error = relative_error / bestKnown;
+                cout << "Relative error: " << relative_error << " (" << relative_error / 100 << "%)" << endl;
+                cout << "Absolute error: " << absolute_error << " (" << absolute_error / 100 << "%)" << endl;
             }
-
         }
         else
         {
@@ -857,10 +1244,10 @@ int main()
             }
             if (bestKnown > 0)
             {
-                float relative_error = abs(cost-bestKnown);
-                float absolute_error = relative_error/bestKnown;
-                cout<<"Relative error: "<<relative_error<<" ("<<relative_error/100<<"%)"<<endl;
-                cout<<"Absolute error: "<<absolute_error<<" ("<<absolute_error/100<<"%)"<<endl;
+                float relative_error = abs(cost - bestKnown);
+                float absolute_error = relative_error / bestKnown;
+                cout << "Relative error: " << relative_error << " (" << relative_error / 100 << "%)" << endl;
+                cout << "Absolute error: " << absolute_error << " (" << absolute_error / 100 << "%)" << endl;
             }
         }
         else
@@ -869,7 +1256,14 @@ int main()
         }
     }
 
-    validPath(bestpath); // checking if path is valid
+    if (validPath(bestpath)) // checking if path is valid
+    {
+        cout << "Path is valid" << endl;
+    }
+    else
+    {
+        cout << "Path is invalid" << endl;
+    }
     cout << endl
          << "End of program" << endl;
     cin.get();
